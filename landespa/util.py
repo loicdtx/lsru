@@ -54,43 +54,6 @@ def querySceneLists(collections, ll, ur, start_date, end_date, api_key):
 
 
 
-# Build json file for request
-def makeJson(scene_list, center_long, center_lat, lats, lngs):
-    # TODO: add site name and sensor
-    order_json = {
-    "etm7": {
-        "inputs": scene_list, 
-        "products": ["sr", "sr_ndvi", "cloud", "sr_ndmi", "sr_evi", "sr_savi"]
-    }, 
-    "format": "gtiff", 
-    "resize": {
-        "pixel_size": 30, 
-        "pixel_size_units": "meters"
-    }, 
-    "resampling_method": "bil", 
-    "plot_statistics": False, 
-    "projection": {
-        "aea": {
-            "standard_parallel_1": center_lat - 2,
-            "standard_parallel_2": center_lat + 2,
-            "central_meridian": center_long,
-            "latitude_of_origin": center_lat,
-            "false_easting": 0.0,
-            "false_northing": 0.0,
-            "datum": "wgs84"
-        }
-    },
-    "image_extents": {
-        "north": max(*lats),
-        "south": min(*lats),
-        "east": max(*lngs),
-        "west": min(*lngs),
-        "units": "dd"
-    },
-    "note": "this is going to be sweet..."
-    }
-    return order_json
-
 def parseSceneId(id):
     """Landsat sceneID parser
 
@@ -115,4 +78,69 @@ def parseSceneId(id):
     return id_meta
 
 
-
+class jsonBuilder(object):
+    """Class to incrementaly build a dictionary passed as json to the espa order"""
+    def __init__(self, sensor, scene_list,\
+        products = ["sr", "sr_ndvi", "cloud", "sr_ndmi", "sr_evi", "sr_savi"],\
+        note = "Order passed on %s" % datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')):
+        """
+        Args:
+            sensor (string) one of tm4, tm5, etm7, oli8
+            scene_list (list) list of sceneIDs
+            products (list of strings)
+            note (string)
+        """
+        if sensor not in ['tm4', 'tm5', 'etm7', 'oli8']:
+            raise ValueError('Invalid sensor (chose between tm4, tm5, etm7 and oli8)')
+        self.process_dict = {
+            sensor : {
+            "inputs": scene_list, 
+            "products": products
+        },
+            "format": "gtiff",
+            "note": note
+        }
+    def addProjection(self, proj = 'aea', resampling_method = 'bil', center_coords = None):
+        """
+        Args:
+            proj (string)
+            resampling_method (string)
+            center_coords (dict) Required for proj = 'aea' only. Dict with long and lat keys
+        """
+        if proj is 'aea':
+            if center_coords is None:
+                raise ValueError('With aea projection you must supply a dictionary of center coordinates')
+            proj_dict = {"projection": {
+                            "aea": {
+                                "standard_parallel_1": center_coords['lat'] - 5,
+                                "standard_parallel_2": center_coords['lat'] + 5,
+                                "central_meridian": center_coords['long'],
+                                "latitude_of_origin": center_coords['lat'],
+                                "false_easting": 0.0,
+                                "false_northing": 0.0,
+                                "datum": "wgs84"
+                            }
+                        },
+                        "resampling_method": resampling_method}
+        else:
+            raise ValueError('Projection not yet implmented')
+        self.process_dict.update(proj_dict)
+    def addResizeOption(self, extent):
+        """ Add resize parameters to espa order dictionary dictionary
+            
+        Args:
+            extent (dict) dict with keys xmin, xmax, ymin, ymax
+        """
+        extent_dict = {"image_extents": {
+                            "north": extent['ymax'],
+                            "south": extent['ymin'],
+                            "east": extent['xmax'],
+                            "west": extent['xmin'],
+                            "units": "dd"
+                        }}
+        self.process_dict.update(extent_dict)
+    def getDict(self):
+        """ Retrieve dictionary generated
+        """
+        return self.process_dict
+        
