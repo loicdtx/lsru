@@ -7,6 +7,7 @@ from datetime import datetime
 from pprint import pprint
 
 def xyToBox(center_coords, radius):
+    # TODO: add function to generate same outputs from a spatial object read with fiona
     """ Make extent/boundingBox from coordinates and radius
 
     Define an extent around the point (requires projecting back and forth to a equidistant local projection
@@ -22,13 +23,13 @@ def xyToBox(center_coords, radius):
     box = geometry.box(-radius, -radius, radius, radius)
     # Project back to longlat
     lngs, lats = prj(*box.exterior.xy, inverse=True)
-
     # Reformat to 2 dictionaries
     ll = {"longitude": min(*lngs), "latitude": min(*lats)}
     ur = {"longitude": max(*lngs), "latitude": max(*lats)}
-    return (ll, ul, lngs, lats)
+    return (ll, ur, lngs, lats)
 
 def querySceneLists(collection, ll, ur, start_date, end_date, api_key):
+    # TODO: option to order with just a point. Look back at usgs.api.search options
     """ Send a request to earth explorer api
 
     Args:
@@ -44,14 +45,10 @@ def querySceneLists(collection, ll, ur, start_date, end_date, api_key):
         start_date=start_date,\
         end_date=end_date,\
         api_key=api_key)
-
     scene_list = []
     for scene in scenes:
         scene_list.append(scene['entityId'])
-    # Apend dictonary that contains all sceneLists for all sensors
-    scene_list_dict[collection['espa']] = scene_list
-
-    return scene_list_dict
+    return scene_list
 
 
 
