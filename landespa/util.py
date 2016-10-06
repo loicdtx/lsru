@@ -6,49 +6,50 @@ import re
 from datetime import datetime
 from pprint import pprint
 
-# Parameter
-# Coordinates of a point (flux tower) in decimal degrees
-center_long = 12
-center_lat = 45
-start_date='2015-04-01'
-end_date='2016-05-01'
-# radius in meters, used to defined the extent around the supplied origin
-radius = 2000
-user_name = 'dutrieux'
-password = 'passwd'
-# Get your own api key using "usgs login usgs_username usgs_password" directly from the command line
-api_key = '233009bd81ee4aa3b48169a7c1dd3a78'
+def xyToBox(center_coords, radius):
+    """ Make extent/boundingBox from coordinates and radius
 
-def xyToBox(long, lat):
-    # Define an extent around the point (requires projecting back and forth to a
-    # equidistant local projection
-    prj = pyproj.Proj(proj='aeqd', lat_0=center_lat, lon_0=center_long)
+    Define an extent around the point (requires projecting back and forth to a equidistant local projection
+    
+    Args:
+        center_coords (dict) with long and lat keys
+        radius (int) square buffer radius in meters
+
+    Returns:
+        Tupple of four (lowerLeft dict, upperRight dicts, long coordinates tupple, lat coordinates tupple)
+    """
+    prj = pyproj.Proj(proj='aeqd', lat_0=center_coords['lat'], lon_0=center_coords['long'])
     box = geometry.box(-radius, -radius, radius, radius)
     # Project back to longlat
     lngs, lats = prj(*box.exterior.xy, inverse=True)
 
     # Reformat to 2 dictionaries
-    ll = { "longitude": min(*lngs), "latitude": min(*lats) }
-    ur = { "longitude": max(*lngs), "latitude": max(*lats) }
+    ll = {"longitude": min(*lngs), "latitude": min(*lats)}
+    ur = {"longitude": max(*lngs), "latitude": max(*lats)}
     return (ll, ul, lngs, lats)
 
-def querySceneLists(collections, ll, ur, start_date, end_date, api_key):
-    # Init a dictionary to store sceneLists for each sensor
-    scene_list_dict = {}
-    for collection in collections:
-        # Query sceneList
-        scenes = api.search(collection['ee'], 'EE',\
-            ll=ll,\
-            ur=ur,\
-            start_date=start_date,\
-            end_date=end_date,\
-            api_key=api_key)
+def querySceneLists(collection, ll, ur, start_date, end_date, api_key):
+    """ Send a request to earth explorer api
 
-        scene_list = []
-        for scene in scenes:
-            scene_list.append(scene['entityId'])
-        # Apend dictonary that contains all sceneLists for all sensors
-        scene_list_dict[collection['espa']] = scene_list
+    Args:
+        collection (string) one of 'LSR_LANDSAT_ETM_COMBINED', 'LSR_LANDSAT_8', and 'LSR_LANDSAT_TM'
+        ll (dict) lowerLeft corner dict with longitude and latitude keys
+        ur (dict) upperRight corner dict with longitude and latitude keys
+        dates (strings) with '%Y-%m-%d' format
+        api_key (string) usgs api key (retrieve it using the 'usgs login' command line)
+    """
+    scenes = api.search(collection, 'EE',\
+        ll=ll,\
+        ur=ur,\
+        start_date=start_date,\
+        end_date=end_date,\
+        api_key=api_key)
+
+    scene_list = []
+    for scene in scenes:
+        scene_list.append(scene['entityId'])
+    # Apend dictonary that contains all sceneLists for all sensors
+    scene_list_dict[collection['espa']] = scene_list
 
     return scene_list_dict
 
