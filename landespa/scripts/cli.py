@@ -22,7 +22,8 @@ def landespa():
 def sceneListFromPoint(collection, long, lat, radius, end_date, start_date, api_key):
 	center_coords = {'long': long, 'lat': lat}
 	ll, ur, lngs, lats = xyToBox(center_coords, radius)
-	return querySceneLists(collection, ll, ur, start_date, end_date, api_key)
+	lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
+	print'\n'.join(lst)
 
 
 
