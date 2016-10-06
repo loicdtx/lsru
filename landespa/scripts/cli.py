@@ -1,10 +1,6 @@
-import pyproj
-from shapely import geometry
-from usgs import soap, api
 import requests
 from datetime import datetime
 from landespa.util import xyToBox, querySceneLists, parseSceneId, jsonBuilder
-from pprint import pprint
 import click
 
 
@@ -30,7 +26,7 @@ def sceneListFromPoint(collection, long, lat, radius, end_date, start_date, api_
 
 
 
-
+landespa.add_command(sceneListFromPoint)
 
 # Batch function:
     # Read file containing coordinates
