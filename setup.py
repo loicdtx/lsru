@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+import os
+
+# Create directory to store download logs
+if not os.path.exists(os.path.expanduser('~/.landespa')):
+    os.makedirs(os.path.expanduser('~/.landespa'))
 
 
 setup(name='landespa',
-      version=0.0.1,
+      version='0.0.1',
       description=u"Access the ESPA API for Landsat surface reflectance data ordering",
       classifiers=[],
       keywords='',

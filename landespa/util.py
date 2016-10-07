@@ -3,6 +3,7 @@ from shapely import geometry
 from usgs import soap, api
 import requests
 import re
+import math
 from datetime import datetime
 from pprint import pprint
 
@@ -120,6 +121,18 @@ class jsonBuilder(object):
                             }
                         },
                         "resampling_method": resampling_method}
+        else if proj is 'utm':
+            if center_coords is None:
+                raise ValueError('I need center coordinates to find the UTM zone')
+            zone = getUtmZone(center_coords['long'])
+            proj_dict = {"projection": {
+                            "utm": {
+                                "zone": zone,
+                                "zone_ns": "north",
+                                "datum": "wgs84"
+                            }
+                        },
+                        "resampling_method": resampling_method}
         else:
             raise ValueError('Projection not yet implmented')
         self.process_dict.update(proj_dict)
@@ -142,3 +155,20 @@ class jsonBuilder(object):
         """
         return self.process_dict
         
+
+def makeEeFileName(name):
+    name = name.upper()
+    collection_name = {
+    'LE7': 'LSR_LANDSAT_ETM_COMBINED',
+    'LC8': 'LSR_LANDSAT_8',
+    'LT5': 'LSR_LANDSAT_TM'}
+    return collection_name.get(name)
+
+def shp2bbox():
+    pass
+
+def getUtmZone(long):
+    """Find in which UTM zone is a given location (longitude only)
+    """
+    zone = math.floor((long + 180)/6) % 60 + 1
+    return int(zone)
