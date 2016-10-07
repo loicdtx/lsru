@@ -77,11 +77,39 @@ def parseSceneId(id):
     return id_meta
 
 
+def makeEeFileName(name):
+    name = name.upper()
+    collection_name = {
+    'LE7': 'LSR_LANDSAT_ETM_COMBINED',
+    'LC8': 'LSR_LANDSAT_8',
+    'LT5': 'LSR_LANDSAT_TM'}
+    return collection_name.get(name)
+
+def makeEspaFileName(name):
+    name = name.upper()
+    collection_name = {
+    'LE7': 'etm7',
+    'LC8': 'oli8',
+    'LT5': 'tm5',
+    'LT4': 'tm4'}
+    return collection_name.get(name)
+
+
+def shp2extent():
+    pass
+
+def getUtmZone(long):
+    """Find in which UTM zone is a given location (longitude only)
+    """
+    zone = math.floor((long + 180)/6) % 60 + 1
+    return int(zone)
+
+
 class jsonBuilder(object):
     """Class to incrementaly build a dictionary passed as json to the espa order"""
     def __init__(self, sensor, scene_list,\
         products = ["sr", "sr_ndvi", "cloud", "sr_ndmi", "sr_evi", "sr_savi"],\
-        note = "Order passed on %s" % datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')):
+        note = None):
         """
         Args:
             sensor (string) one of tm4, tm5, etm7, oli8
@@ -89,8 +117,8 @@ class jsonBuilder(object):
             products (list of strings)
             note (string)
         """
-        if sensor not in ['tm4', 'tm5', 'etm7', 'oli8']:
-            raise ValueError('Invalid sensor (chose between tm4, tm5, etm7 and oli8)')
+        if note is None:
+            note = "%s order passed on %s" % (sensor, datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S'))
         self.process_dict = {
             sensor : {
             "inputs": scene_list, 
@@ -121,7 +149,7 @@ class jsonBuilder(object):
                             }
                         },
                         "resampling_method": resampling_method}
-        else if proj is 'utm':
+        elif proj is 'utm':
             if center_coords is None:
                 raise ValueError('I need center coordinates to find the UTM zone')
             zone = getUtmZone(center_coords['long'])
@@ -155,20 +183,3 @@ class jsonBuilder(object):
         """
         return self.process_dict
         
-
-def makeEeFileName(name):
-    name = name.upper()
-    collection_name = {
-    'LE7': 'LSR_LANDSAT_ETM_COMBINED',
-    'LC8': 'LSR_LANDSAT_8',
-    'LT5': 'LSR_LANDSAT_TM'}
-    return collection_name.get(name)
-
-def shp2bbox():
-    pass
-
-def getUtmZone(long):
-    """Find in which UTM zone is a given location (longitude only)
-    """
-    zone = math.floor((long + 180)/6) % 60 + 1
-    return int(zone)
