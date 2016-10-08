@@ -104,6 +104,39 @@ def getUtmZone(long):
     zone = math.floor((long + 180)/6) % 60 + 1
     return int(zone)
 
+class extent_geo(object):
+    """Extent class in longlat WGS84
+    """
+    def __init__(self, xmin, xmax, ymin, ymax):
+        self.xmin = xmin
+        self.xmax = xmax
+        self.ymin = ymin
+        self.ymax = ymax
+    @classmethod
+    def fromFile(cls, file):
+        with fiona.open(file) as src:
+            meta = src.meta
+        Multi = geometry.MultiPolygon([geometry.shape(pol['geometry']) for pol in fiona.open('file')])
+        bounds = geometry.shape(Multi).bounds
+        # TODO
+        # project bounds values from proj in meta to longlat
+        # extent  = cls(xmin, xmax, ymin, ymax)
+        # return extent
+    @classmethod
+    def fromCenterAndRadius(cls, lon_0, lat_0, radius):
+        prj = pyproj.Proj(proj='aeqd', lat_0=lat_0, lon_0=lon_0)
+        box = geometry.box(-radius, -radius, radius, radius)
+        # Project back to longlat
+        lngs, lats = prj(*box.exterior.xy, inverse=True)
+        # Reformat to 2 dictionaries
+        xmin = min(*lngs)
+        xmax = max(*lngs)
+        ymin = min(*lats)
+        ymax = max(*lats)
+        extent = cls(xmin, xmax, ymin, ymax)
+        return extent
+        
+
 
 class jsonBuilder(object):
     """Class to incrementaly build a dictionary passed as json to the espa order"""
