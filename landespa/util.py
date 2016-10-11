@@ -3,12 +3,15 @@ from shapely import geometry
 from usgs import soap, api
 import requests
 import re
+import os
 import math
 from datetime import datetime
+import fiona
 from pprint import pprint
 
+KEY_FILE = os.path.expanduser('~/.usgs')
+
 def xyToBox(center_coords, radius):
-    # TODO: add function to generate same outputs from a spatial object read with fiona
     """ Make extent/boundingBox from coordinates and radius
 
     Define an extent around the point (requires projecting back and forth to a equidistant local projection
@@ -81,7 +84,8 @@ def makeEeFileName(name):
     name = name.upper()
     collection_name = {
     'LE7': 'LSR_LANDSAT_ETM_COMBINED',
-    'LC8': 'LSR_LANDSAT_8',
+    'LC8': 'LANDSAT_8', # TODO: this is actually incorect but the correct collection name (LSR_LANDSAT_8) does not work.
+                        # Scene IDs should be the same though
     'LT5': 'LSR_LANDSAT_TM'}
     return collection_name.get(name)
 
@@ -191,7 +195,7 @@ class jsonBuilder(object):
             resampling_method (string)
             center_coords (dict) Required for proj = 'aea' only. Dict with long and lat keys
         """
-        if proj is 'aea':
+        if proj == 'aea':
             if center_coords is None:
                 raise ValueError('With aea projection you must supply a dictionary of center coordinates')
             proj_dict = {"projection": {
@@ -206,7 +210,7 @@ class jsonBuilder(object):
                             }
                         },
                         "resampling_method": resampling_method}
-        elif proj is 'utm':
+        elif proj == 'utm':
             if center_coords is None:
                 raise ValueError('I need center coordinates to find the UTM zone')
             zone = getUtmZone(center_coords['long'])
@@ -225,13 +229,13 @@ class jsonBuilder(object):
         """ Add resize parameters to espa order dictionary dictionary
             
         Args:
-            extent (dict) dict with keys xmin, xmax, ymin, ymax
+            extent (dict) object of class extent_geo
         """
         extent_dict = {"image_extents": {
-                            "north": extent['ymax'],
-                            "south": extent['ymin'],
-                            "east": extent['xmax'],
-                            "west": extent['xmin'],
+                            "north": extent.ymax,
+                            "south": extent.ymin,
+                            "east": extent.xmax,
+                            "west": extent.xmin,
                             "units": "dd"
                         }}
         self.process_dict.update(extent_dict)
@@ -239,4 +243,54 @@ class jsonBuilder(object):
         """ Retrieve dictionary generated
         """
         return self.process_dict
+
+def orderList(scene_list, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password):
+    # Ensure that all items in the list belong to the same collection
+    collection = parseSceneId(scene_list[0])['sensor']
+    if not all(parseSceneId(scene)['sensor'] == collection.upper() for scene in scene_list):
+        raise ValueError('Not all elements of scenelist belong to the same collection')
+    # convert sensor to espa conventions
+    collection = makeEspaFileName(collection)
+    # start building json object for request
+    json_class = jsonBuilder(collection, scene_list)
+    # 
+    if proj:
+        if long_0 and lat_0:
+            center_coords = {'lat': lat_0, 'long': long_0}
+        elif xmin and xmax and ymin and ymax:
+            center_coords = extent_geo(xmin, xmax, ymin, ymax).getCenterCoords()
+        elif file:
+            center_coords = extent_geo.fromFile(file).getCenterCoords()
+        else:
+            center_coords = None
+        json_class.addProjection(proj = proj, resampling_method = resampling_method, center_coords = center_coords)
+        if resize:
+            # resizing is optional but requires that the data be reprojected
+            if xmin and xmax and ymin and ymax:
+                extent = extent_geo(xmin, xmax, ymin, ymax)
+            if long_0 and lat_0 and radius:
+                extent = extent_geo.fromCenterAndRadius(long_0, lat_0, radius)
+            if file:
+                extent = extent_geo.fromFile(file)
+            json_class.addResizeOption(extent)
+    # Cary on with the request
+    json = json_class.getDict()
+    r = requests.post("https://espa.cr.usgs.gov/api/v0/order",\
+        auth=(username, password), verify=False, json=json)
+    if r.status_code != 200:
+        raise ValueError('Something went wrong with the request')
+    return r
+
+def getSceneList(collection, long_0, lat_0, radius, file, end_date, start_date, api_key):
+    if api_key is None:
+        with open(KEY_FILE) as src:
+            api_key = src.read()
+    collection = makeEeFileName(collection)
+    if long_0 and lat_0:
+        extent = extent_geo.fromCenterAndRadius(long_0, lat_0, radius)
+    if file:
+        extent = extent_geo.fromFile(file)
+    ll, ur = extent.getCorners()
+    lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
+    return lst
         
