@@ -11,27 +11,6 @@ from pprint import pprint
 
 KEY_FILE = os.path.expanduser('~/.usgs')
 
-def xyToBox(center_coords, radius):
-    """ Make extent/boundingBox from coordinates and radius
-
-    Define an extent around the point (requires projecting back and forth to a equidistant local projection
-    
-    Args:
-        center_coords (dict) with long and lat keys
-        radius (int) square buffer radius in meters
-
-    Returns:
-        Tupple of four (lowerLeft dict, upperRight dicts, long coordinates tupple, lat coordinates tupple)
-    """
-    prj = pyproj.Proj(proj='aeqd', lat_0=center_coords['lat'], lon_0=center_coords['long'])
-    box = geometry.box(-radius, -radius, radius, radius)
-    # Project back to longlat
-    lngs, lats = prj(*box.exterior.xy, inverse=True)
-    # Reformat to 2 dictionaries
-    ll = {"longitude": min(*lngs), "latitude": min(*lats)}
-    ur = {"longitude": max(*lngs), "latitude": max(*lats)}
-    return (ll, ur, lngs, lats)
-
 def querySceneLists(collection, ll, ur, start_date, end_date, api_key):
     # TODO: option to order with just a point. Look back at usgs.api.search options
     """ Send a request to earth explorer api

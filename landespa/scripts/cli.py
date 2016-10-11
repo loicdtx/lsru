@@ -2,7 +2,7 @@ import requests
 import os
 from usgs import api
 from datetime import datetime
-from landespa.util import xyToBox, querySceneLists, parseSceneId, jsonBuilder, makeEeFileName, makeEspaFileName
+from landespa.util import querySceneLists, parseSceneId, jsonBuilder, makeEeFileName, makeEspaFileName
 from landespa.util import extent_geo, orderList, getSceneList
 import click
 
