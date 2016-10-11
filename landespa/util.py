@@ -95,14 +95,16 @@ def makeEspaFileName(name):
     return collection_name.get(name)
 
 
-def shp2extent():
-    pass
-
 def getUtmZone(long):
     """Find in which UTM zone is a given location (longitude only)
     """
     zone = math.floor((long + 180)/6) % 60 + 1
     return int(zone)
+
+
+def mean(numbers):
+    return float(sum(numbers)) / len(numbers)
+
 
 class extent_geo(object):
     """Extent class in longlat WGS84
@@ -116,12 +118,14 @@ class extent_geo(object):
     def fromFile(cls, file):
         with fiona.open(file) as src:
             meta = src.meta
-        Multi = geometry.MultiPolygon([geometry.shape(pol['geometry']) for pol in fiona.open('file')])
+        Multi = geometry.MultiPolygon([geometry.shape(pol['geometry']) for pol in fiona.open(file)])
         bounds = geometry.shape(Multi).bounds
-        # TODO
-        # project bounds values from proj in meta to longlat
-        # extent  = cls(xmin, xmax, ymin, ymax)
-        # return extent
+        # Projection to longlat
+        p1 = pyproj.Proj(**meta.get('crs'))
+        p2 = pyproj.Proj(init = 'epsg:4326')
+        x,y = pyproj.transform(p1, p2, *zip(bounds[0:2], bounds[2:4]))
+        extent = cls(min(x), max(x), min(y), max(y))
+        return extent
     @classmethod
     def fromCenterAndRadius(cls, lon_0, lat_0, radius):
         prj = pyproj.Proj(proj='aeqd', lat_0=lat_0, lon_0=lon_0)
@@ -135,6 +139,26 @@ class extent_geo(object):
         ymax = max(*lats)
         extent = cls(xmin, xmax, ymin, ymax)
         return extent
+    def getCenterCoords(self):
+        """Computes Long Lat coordinates of extent centroid
+        
+        Returns:
+            Dictionary: long, lat dictionary
+        """
+        return {'long': mean([self.xmin, self.xmax]),
+                'lat': mean([self.ymin, self.ymax])}
+    def getCenterLong(self):
+        """Computes Long coordinate of extent centroid
+        
+        Returns:
+            Int: long coordinate of extent centroid
+        """
+        return mean([self.xmin, self.xmax])
+    def getCorners(self):
+        """ Returns a tupple of 2 dicts with ll and ur coordinates
+        """
+        return ({"longitude": self.xmin, "latitude": self.ymin}, {"longitude": self.xmax, "latitude": self.ymax})
+
         
 
 
