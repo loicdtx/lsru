@@ -70,7 +70,7 @@ Options:
 ### Query data
 
 To be able to query data, you must run `lsru login` and enter your USGS credentials. The API key generated is then valid for 1 hour, and is accessed automatically by the other functions.
-After that you can perform the query using either 
+After that you can perform the query using either bounding box coordinates, center coordinates, center coordinates + radius, or a spatial vector object from which the bounding box will be used.
 
 ```sh
 # Perform a query using center coordinates and radius
