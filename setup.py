@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 import os
 
 # Create directory to store download logs
-if not os.path.exists(os.path.expanduser('~/.landespa')):
-    os.makedirs(os.path.expanduser('~/.landespa'))
+# if not os.path.exists(os.path.expanduser('~/.landespa')):
+#     os.makedirs(os.path.expanduser('~/.landespa'))
 
 
 setup(name='landespa',
@@ -25,6 +25,6 @@ setup(name='landespa',
       ],
       entry_points="""
       [console_scripts]
-      landespa=landespa.scripts.cli:landespa
+      lsru=lsru.scripts.cli:lsru
       """
       )

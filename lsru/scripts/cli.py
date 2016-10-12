@@ -9,13 +9,13 @@ import click
 today = str(datetime.today().date())
 
 @click.group()
-def landespa():
+def lsru():
     pass
 
 @click.command()
 @click.option('--username', prompt='USGS username')
 @click.option('--password', prompt='USGS password', hide_input=True)
-def usgsLogin(username, password):
+def login(username, password):
     """Basic rewrite of usgs login cli with username and password prompt
     """
     api_key = api.login(username, password)
@@ -49,7 +49,7 @@ def query(collection, long_0, lat_0, radius, file, end_date, start_date, api_key
 @click.option('--file')
 @click.option('--username', prompt='USGS username')
 @click.option('--password', prompt='USGS password', hide_input=True)
-def orderFromList(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password):
+def order(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password):
     # TODO: investigate how to pass the products
     # Read scenelist (file) as a list
     with open(scenelist) as src:
@@ -75,13 +75,13 @@ def orderFromList(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, 
 @click.option('--api_key', help = 'USGS API key, or run usgslogin command prior to this one')
 @click.option('--username', prompt='USGS username')
 @click.option('--password', prompt='USGS password', hide_input=True)
-def orderSpatial(collection, long_0, lat_0, radius, file, end_date, start_date, proj, resampling_method, resize, xmin, xmax, ymin, ymax, api_key, username, password):
+def sp_order(collection, long_0, lat_0, radius, file, end_date, start_date, proj, resampling_method, resize, xmin, xmax, ymin, ymax, api_key, username, password):
     scenelist = getSceneList(collection, long_0, lat_0, radius, file, end_date, start_date, api_key)
     r = orderList(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password)
     print r.text
 
 landespa.add_command(query)
-landespa.add_command(usgsLogin)
-landespa.add_command(orderFromList)
-landespa.add_command(orderSpatial)
+landespa.add_command(login)
+landespa.add_command(order)
+landespa.add_command(sp_order)
 # landespa.add_command(hello)
