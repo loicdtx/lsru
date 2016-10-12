@@ -16,14 +16,15 @@ You can but it will be top of atmosphere (TOA) radiance, not surface reflectance
 The critical part between TOA radiance and surface reflectance is the atmospheric correction. That means that surface reflectance data are corrected for atmospheric effects, therefore providing accurate measurements of the target's spectral properties.
 
 Today (October 2016), there are a few ways to obtain Landsat surface reflectance data (All of them have been processed by LEDAPS, the reference high level Landsat processing tool):
+
 1. By ordering them via the ESPA system
-    - this is what this utility helps you to do
-    - ESPA does on demand pre-processing of full (reprojected) scenes or subsets
-    - A cloud mask (fmask) and vegetation indices can also be added to the order
+  - this is what this utility helps you to do
+  - ESPA does on demand pre-processing of full (reprojected) scenes or subsets
+  - A cloud mask (fmask) and vegetation indices can also be added to the order
 1. By ordering them from Google Earth Engine
-	- GEE has a 'virtual' surface reflectance collection (processed on the fly by LEDAPS) and is currently ingesting the entired ESPA archive.
+  - GEE has a 'virtual' surface reflectance collection (processed on the fly by LEDAPS) and is currently ingesting the entired ESPA archive.
 1. By downloading TOA data from any source and processing with a local installation of LEDAPS
-	- If you have a server and you're good with system administration, why not...
+  - If you have a server and you're good with system administration, why not...
 
 
 ## Usage
@@ -108,7 +109,7 @@ Which you can directly write to a file, and reuse later for your order.
 lsru query --collection LE7 --long_0 44.78 --lat_0 4.71 --radius 2000 --start_date 2015-01-01 > ~/sceneList.txt
 ```
 
-The query can be done either via bounding box coordinates (`xmin`, `xmax`, `ymin`, `ymax`), or via center coord and radius (`long_0`, `lat\_0`, `radius`), or spatial object (filename)
+The query can be done either via bounding box coordinates (`xmin`, `xmax`, `ymin`, `ymax`), or via center coord and radius (`long_0`, `lat_0`, `radius`), or spatial object (filename)
 
 ### Order data on espa
 
@@ -119,6 +120,10 @@ lsru order --proj aea --resize --long_0 44.78 --lat_0 4.71 --radius 2000 ~/scene
 ```
 
 You can also do this in 1 step, using the `lsru sp_order`
+
+```
+lsru sp_order --collection LE7 --long_0 4.71 --lat_0 44.78 --radius 2000 --start_date 2015-01-01 --proj aea --resize
+```
 
 
 ### Batch query + order
@@ -139,7 +144,7 @@ lsru order_batch --collection LE7 --radius 2000 --proj aea --start_date 2014-01-
 
 ### Download data
 
-See [espa bulk downloader](https://github.com/USGS-EROS/espa-bulk-downloader)
+See [espa bulk downloader](https://github.com/USGS-EROS/espa-bulk-downloader).
 
 
 ## Installing landsat-espa-util
@@ -160,12 +165,13 @@ pip install git+https://github.com/loicdtx/landsat-espa-util.git
 
 
 ## TODO
-[] Make fiona (and shapely) dependencies optional
-[] Figure out SSL certificate stuff
-[] How to pass products as cli arguments
-[] Fully test --file option
-[] python 3 ???
-[] Add support for all espa projections
-[] Pass comment to espa order
-[] Make orderList not crash when empty scene_list is provided
-[] Setup a downloader with schedule
+
+- Make fiona (and shapely) dependencies optional
+- Figure out SSL certificate stuff
+- How to pass products as cli arguments
+- Fully test --file option
+- python 3 ???
+- Add support for all espa projections
+- Pass comment to espa order
+- Make orderList not crash when empty scene_list is provided
+- Setup a downloader with schedule
