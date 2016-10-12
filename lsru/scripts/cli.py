@@ -117,7 +117,7 @@ def order_batch(filename, collection, radius, start_date, end_date, proj, resamp
         scenelist = getSceneList(collection, long_0, lat_0, radius,filename = None,\
             end_date = end_date, start_date = start_date, api_key = api_key)
         r = orderList(username, password, scenelist, proj, resampling_method, resize,\
-            long_0 = long_0, lat_0 = lat_0, radius = radius)
+            long_0 = long_0, lat_0 = lat_0, radius = radius, debug = debug)
         print r.text
     print "Order complete"
 
