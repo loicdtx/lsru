@@ -1,12 +1,7 @@
-import requests
-import os
 from usgs import api
-from datetime import datetime
-from landespa.util import querySceneLists, parseSceneId, jsonBuilder, makeEeFileName, makeEspaFileName
-from landespa.util import extent_geo, orderList, getSceneList
+from lsru.lsru import getSceneList, orderList
+from lsru import TODAY
 import click
-
-today = str(datetime.today().date())
 
 @click.group()
 def lsru():
@@ -28,7 +23,7 @@ def login(username, password):
 @click.option('--lat_0', help = 'Latitude of query point in decimal degrees')
 @click.option('--radius', default = 2, help = 'Square buffer radius in meters')
 @click.option('--start_date', default = '1982-07-15', help = 'Start date yyyy-mm-dd')
-@click.option('--end_date', default = today, help = 'End date yyyy-mm-dd')
+@click.option('--end_date', default = TODAY, help = 'End date yyyy-mm-dd')
 @click.option('--api_key', help = 'USGS API key, or run usgslogin command prior to this one')
 def query(collection, long_0, lat_0, radius, file, end_date, start_date, api_key):
     lst = getSceneList(collection, long_0, lat_0, radius, file, end_date, start_date, api_key)
@@ -64,7 +59,7 @@ def order(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, lo
 @click.option('--radius', default = 2, help = 'Square buffer radius in meters')
 @click.option('--file', required = False, help = 'Path to spatial vector file from which extent will be retrieved and used for the spatial query')
 @click.option('--start_date', default = '1982-07-15', help = 'Start date yyyy-mm-dd')
-@click.option('--end_date', default = today, help = 'End date yyyy-mm-dd')
+@click.option('--end_date', default = TODAY, help = 'End date yyyy-mm-dd')
 @click.option('--proj')
 @click.option('--resampling_method', default = 'bil')
 @click.option('--resize/--no-resize', default = False) # THis is a flag
@@ -80,8 +75,14 @@ def sp_order(collection, long_0, lat_0, radius, file, end_date, start_date, proj
     r = orderList(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password)
     print r.text
 
-landespa.add_command(query)
-landespa.add_command(login)
-landespa.add_command(order)
-landespa.add_command(sp_order)
-# landespa.add_command(hello)
+@click.command()
+@click.argument('file', type=click.File('rb'))
+def order_batch(file):
+    with open(file) as src:
+        scene_list = src.read().splitlines()
+
+lsru.add_command(query)
+lsru.add_command(login)
+lsru.add_command(order)
+lsru.add_command(sp_order)
+lsru.add_command(order_batch)
