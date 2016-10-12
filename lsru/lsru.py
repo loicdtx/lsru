@@ -12,8 +12,11 @@ from datetime import datetime
 import os
 
 # Self
-from lsru.utils import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean
-from lsru import KEY_FILE
+from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterList
+from . import KEY_FILE
+
+#debug
+from pprint import pprint
 
 
 def querySceneLists(collection, ll, ur, start_date, end_date, api_key):
@@ -48,10 +51,10 @@ class extent_geo(object):
         self.ymin = ymin
         self.ymax = ymax
     @classmethod
-    def fromFile(cls, file):
-        with fiona.open(file) as src:
+    def fromFile(cls, filename):
+        with fiona.open(filename) as src:
             meta = src.meta
-        Multi = geometry.MultiPolygon([geometry.shape(pol['geometry']) for pol in fiona.open(file)])
+        Multi = geometry.MultiPolygon([geometry.shape(pol['geometry']) for pol in fiona.open(filename)])
         bounds = geometry.shape(Multi).bounds
         # Projection to longlat
         p1 = pyproj.Proj(**meta.get('crs'))
@@ -173,23 +176,25 @@ class jsonBuilder(object):
 
 
 
-def orderList(scene_list, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, file, radius, username, password):
+def orderList(username, password, scene_list, proj, resampling_method, resize, xmin = None, xmax = None, ymin = None, ymax = None, long_0=None, lat_0=None, filename=None, radius=None, debug=False):
     # Ensure that all items in the list belong to the same collection
     collection = parseSceneId(scene_list[0])['sensor']
     if not all(parseSceneId(scene)['sensor'] == collection.upper() for scene in scene_list):
         raise ValueError('Not all elements of scenelist belong to the same collection')
+    # Remove data that cannot be processed to SR
+    scene_list_clean = filterList(scene_list)
     # convert sensor to espa conventions
     collection = makeEspaFileName(collection)
     # start building json object for request
-    json_class = jsonBuilder(collection, scene_list)
+    json_class = jsonBuilder(collection, scene_list_clean)
     # 
     if proj:
         if long_0 and lat_0:
             center_coords = {'lat': lat_0, 'long': long_0}
         elif xmin and xmax and ymin and ymax:
             center_coords = extent_geo(xmin, xmax, ymin, ymax).getCenterCoords()
-        elif file:
-            center_coords = extent_geo.fromFile(file).getCenterCoords()
+        elif filename:
+            center_coords = extent_geo.fromFile(filename).getCenterCoords()
         else:
             center_coords = None
         json_class.addProjection(proj = proj, resampling_method = resampling_method, center_coords = center_coords)
@@ -199,11 +204,13 @@ def orderList(scene_list, proj, resampling_method, resize, xmin, xmax, ymin, yma
                 extent = extent_geo(xmin, xmax, ymin, ymax)
             if long_0 and lat_0 and radius:
                 extent = extent_geo.fromCenterAndRadius(long_0, lat_0, radius)
-            if file:
-                extent = extent_geo.fromFile(file)
+            if filename:
+                extent = extent_geo.fromFile(filename)
             json_class.addResizeOption(extent)
     # Cary on with the request
     json = json_class.getDict()
+    if debug:
+        pprint(json)
     r = requests.post("https://espa.cr.usgs.gov/api/v0/order",\
         auth=(username, password), verify=False, json=json)
     if r.status_code != 200:
@@ -211,15 +218,16 @@ def orderList(scene_list, proj, resampling_method, resize, xmin, xmax, ymin, yma
     return r
 
 
-def getSceneList(collection, long_0, lat_0, radius, file, end_date, start_date, api_key):
+def getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_date, api_key):
     if api_key is None:
         with open(KEY_FILE) as src:
             api_key = src.read()
     collection = makeEeFileName(collection)
     if long_0 and lat_0:
         extent = extent_geo.fromCenterAndRadius(long_0, lat_0, radius)
-    if file:
-        extent = extent_geo.fromFile(file)
+    if filename:
+        extent = extent_geo.fromFile(filename)
     ll, ur = extent.getCorners()
     lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
     return lst
+

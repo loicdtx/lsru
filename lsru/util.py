@@ -1,6 +1,6 @@
 import re
 import math
-from datetime import datetime
+from datetime import datetime, date
 
 
 def parseSceneId(id):
@@ -57,9 +57,34 @@ def mean(numbers):
     return float(sum(numbers)) / len(numbers)
 
 
+def filterList(scene_list):
+    """Remove scenes that cannot be processed to SR
+    
+    From http://landsat.usgs.gov//CDR_LSR.php
+    Due to missing auxiliary input data and/or necessary thermal data, Surface Reflectance processing cannot be applied to data acquired during the dates listed below.
 
+    Landsat 8
+    2015:January 30 to February 19 (DOY 30 to 50)Thermal data unavailable*
+     March 2 to March 4 (DOY 61 to 63)Thermal data unavailable
+
+    2016:February 19 to February 27 (DOY 50 to 58)Auxiliary data unavailable
+     August 8 to August 10 (DOY 221 to 223)Auxiliary data unavailable
+    *Thermal data unavailable for select path/rows; see May 8, 2015 calibration notice for details.
+
+    Landsat 7
+    2016:May 30 to June 12 (DOY 151 to 164)Auxiliary data unavailable
+    """
+    # TODO: Find a cleaner way to perform the filtering
+    def expression(x):
+        exp = parseSceneId(x)['sensor'] == 'LE7' and not date(2016, 05, 30) <= parseSceneId(x)['date'] <= date(2016, 06, 12) or\
+            parseSceneId(x)['sensor'] == 'LC8' and not date(2016, 02, 19) <= parseSceneId(x)['date'] <= date(2016, 02, 27) or\
+            parseSceneId(x)['sensor'] == 'LC8' and not date(2016, 8, 8) <= parseSceneId(x)['date'] <= date(2016, 8, 10) or\
+            parseSceneId(x)['sensor'] == 'LC8' and not date(2015, 01, 30) <= parseSceneId(x)['date'] <= date(2015, 02, 19) or\
+            parseSceneId(x)['sensor'] == 'LC8' and not date(2015, 03, 02) <= parseSceneId(x)['date'] <= date(2015, 03, 04)
+        return exp
+
+    scene_list_clean = [x for x in scene_list if expression(x)]
+    return scene_list_clean
         
 
 
-
-        

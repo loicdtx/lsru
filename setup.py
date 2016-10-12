@@ -6,22 +6,23 @@ import os
 #     os.makedirs(os.path.expanduser('~/.landespa'))
 
 
-setup(name='landespa',
-      version='0.0.1',
+setup(name='lsru',
+      version='0.1.0',
       description=u"Access the ESPA API for Landsat surface reflectance data ordering",
       classifiers=[],
-      keywords='',
+      keywords='landsat, API, espa, usgs',
       author=u"Loic Dutrieux",
       author_email='loic.dutrieux@gmail.com',
       url='https://github.com/loicdtx/landsat-espa-util',
       license='GPLv3',
       packages=find_packages(),
       install_requires=[
-          'click',
           'shapely',
+          'fiona',
+          'pyproj',
           'usgs',
           'requests',
-          'pyproj'
+          'Click',
       ],
       entry_points="""
       [console_scripts]
