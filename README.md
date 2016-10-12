@@ -46,7 +46,26 @@ Commands:
   sp_order     Query and order data for a given location
 ```
 
-Every command has a help page. Run for example `lsru query --help`
+Every command has a help page. Run for example `lsru query --help` and you'll get the following page:
+
+```sh
+Usage: lsru query [OPTIONS]
+
+  Perform a spatial query on the Earth Explorer API
+
+Options:
+  --filename TEXT    Path to spatial vector file from which extent will be
+                     retrieved and used for the spatial query
+  --collection TEXT  Landsat collection to query from Earth Explorer (LT5, LE7
+                     or LC8)
+  --long_0 FLOAT      Longitude of query point in decimal degrees
+  --lat_0 FLOAT       Latitude of query point in decimal degrees
+  --radius INTEGER   Square buffer radius in meters
+  --start_date TEXT  Start date yyyy-mm-dd, defaults to 1982-07-15
+  --end_date TEXT    End date yyyy-mm-dd, defasults to today
+  --api_key TEXT     USGS API key, or run lsru login command prior to this one
+  --help             Show this message and exit.
+```
 
 ### Query data
 
