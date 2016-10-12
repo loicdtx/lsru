@@ -31,7 +31,7 @@ Today (October 2016), there are a few ways to obtain Landsat surface reflectance
 
 `lsru` (Landsat Surface Reflectance Utility) queries available data from the earth explorer API and order them via the espa API.
 
-```
+```sh
 lsru --help
 Usage: lsru [OPTIONS] COMMAND [ARGS]...
 
@@ -53,7 +53,7 @@ Every command has a help page. Run for example `lsru query --help`
 To be able to query data, you must run `lsru login` and enter your USGS credentials. The API key generated is then valid for 1 hour, and is accessed automatically by the other functions.
 After that you can perform the query using either 
 
-```
+```sh
 # Perform a query using center coordinates and radius
 lsru query --collection LE7 --long_0 44.78 --lat_0 4.71 --radius 2000 --start_date 2015-01-01
 ```
@@ -104,7 +104,7 @@ LE71640572015001PFS00
 
 Which you can directly write to a file, and reuse later for your order.
 
-```
+```sh
 # Query data using center coordinates and radius and write output to file
 lsru query --collection LE7 --long_0 44.78 --lat_0 4.71 --radius 2000 --start_date 2015-01-01 > ~/sceneList.txt
 ```
@@ -115,13 +115,15 @@ The query can be done either via bounding box coordinates (`xmin`, `xmax`, `ymin
 
 Using the scene list previously generated
 
-```
+```sh
+# Order data with spatial subsetting from a list of Landsat scene IDs written to file
 lsru order --proj aea --resize --long_0 44.78 --lat_0 4.71 --radius 2000 ~/sceneList.txt
 ```
 
 You can also do this in 1 step, using the `lsru sp_order`
 
-```
+```sh
+# Query and order data with spatial subsetting using spatial parameters (center coordinates and radius in this case)
 lsru sp_order --collection LE7 --long_0 4.71 --lat_0 44.78 --radius 2000 --start_date 2015-01-01 --proj aea --resize
 ```
 
@@ -138,7 +140,8 @@ If you want to order data for multiple locations, it's possible. Save your coord
 
 For example, if I want to order post 2014 LE7 data for a 2000 m radius around these 3 locations, I can save the file as `filename.csv` and use:
 
-```
+```sh
+# Batch query and order data from a list of coordinates written to file
 lsru order_batch --collection LE7 --radius 2000 --proj aea --start_date 2014-01-01 --resize filename.csv
 ```
 
