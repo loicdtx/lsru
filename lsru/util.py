@@ -16,7 +16,7 @@ def parseSceneId(id):
     Returns:
         dictionary: Dictionary containing information on sensor, date, path and row
     """
-    id_grep = re.compile(".*(LT4|LT5|LE7|LC8)(\d{3})(\d{3})(\d{7}).*", re.IGNORECASE)
+    id_grep = re.compile(".*(LT4|LT5|LE7|LC8|LO8)(\d{3})(\d{3})(\d{7}).*", re.IGNORECASE)
     m = id_grep.search(id)
     if m is None:
         raise ValueError('Landsat ID pattern not found for %s' % id)
@@ -57,7 +57,7 @@ def mean(numbers):
     return float(sum(numbers)) / len(numbers)
 
 
-def filterList(scene_list):
+def filterListByDate(scene_list):
     """Remove scenes that cannot be processed to SR
     
     From http://landsat.usgs.gov//CDR_LSR.php
@@ -86,5 +86,12 @@ def filterList(scene_list):
     scene_list_clean = [x for x in scene_list if expression(x)]
     return scene_list_clean
         
+def filterListLT4LO8(scene_list):
+    """Remove LT4 and LO8 entries from a list of sceneIDs
 
+    LO8 cannot be brought to SR, while LT4 and LT5 are the same collection in Earth Explorer
+    but need to be ordered separately on espa. Which makes it a bit complex to include.
+    """
+    scene_list_clean = [x for x in scene_list if (parseSceneId(x)['sensor'] != 'LO8') and (parseSceneId(x)['sensor'] != 'LT4')]
+    return scene_list_clean
 
