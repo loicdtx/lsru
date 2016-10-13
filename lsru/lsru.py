@@ -212,7 +212,7 @@ def orderList(username, password, scene_list, proj, resampling_method, resize, x
     if debug:
         pprint(json)
     r = requests.post("https://espa.cr.usgs.gov/api/v0/order",\
-        auth=(username, password), verify=False, json=json)
+        auth=(username, password), verify=True, json=json)
     if r.status_code != 200:
         raise ValueError('Something went wrong with the request')
     return r

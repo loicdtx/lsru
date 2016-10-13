@@ -189,7 +189,6 @@ pip install git+https://github.com/loicdtx/landsat-espa-util.git
 ## TODO
 
 - Make fiona (and shapely) dependencies optional
-- Figure out SSL certificate stuff
 - How to pass products as cli arguments
 - Fully test --file option
 - python 3 ???
