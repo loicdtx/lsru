@@ -7,7 +7,7 @@ import os
 
 
 setup(name='lsru',
-      version='0.1.2',
+      version='0.1.3',
       description=u"Access the ESPA API for Landsat surface reflectance data ordering",
       classifiers=[],
       keywords='landsat, API, espa, usgs',

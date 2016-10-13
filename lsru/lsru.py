@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 
 # Self
-from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterListByDate, filterListLT4LO8
+from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterListByDate, filterListLT4LO8, isValid
 from . import KEY_FILE
 
 #debug
@@ -180,6 +180,8 @@ def orderList(username, password, scene_list, proj, resampling_method, resize, x
     # If no scenes returned by Earth explorer, say it and exist
     if len(scene_list) == 0:
         return "Empty scene List"
+    # Check for potentially invalid filenames
+    scene_list = [x for x in scene_list if isValid(x)]
     # Ensure that all items in the list belong to the same collection
     scene_list = filterListLT4LO8(scene_list)
     collection = parseSceneId(scene_list[0])['sensor']
