@@ -40,7 +40,7 @@ def makeEspaFileName(name):
     name = name.upper()
     collection_name = {
     'LE7': 'etm7',
-    'LC8': 'oli8',
+    'LC8': 'olitirs8',
     'LT5': 'tm5',
     'LT4': 'tm4'}
     return collection_name.get(name)
@@ -76,11 +76,11 @@ def filterList(scene_list):
     """
     # TODO: Find a cleaner way to perform the filtering
     def expression(x):
-        exp = parseSceneId(x)['sensor'] == 'LE7' and not date(2016, 05, 30) <= parseSceneId(x)['date'] <= date(2016, 06, 12) or\
-            parseSceneId(x)['sensor'] == 'LC8' and not date(2016, 02, 19) <= parseSceneId(x)['date'] <= date(2016, 02, 27) or\
-            parseSceneId(x)['sensor'] == 'LC8' and not date(2016, 8, 8) <= parseSceneId(x)['date'] <= date(2016, 8, 10) or\
-            parseSceneId(x)['sensor'] == 'LC8' and not date(2015, 01, 30) <= parseSceneId(x)['date'] <= date(2015, 02, 19) or\
-            parseSceneId(x)['sensor'] == 'LC8' and not date(2015, 03, 02) <= parseSceneId(x)['date'] <= date(2015, 03, 04)
+        exp = not ((parseSceneId(x)['sensor'] == 'LE7' and date(2016, 05, 30) <= parseSceneId(x)['date'] <= date(2016, 06, 12)) or\
+             (parseSceneId(x)['sensor'] == 'LC8' and date(2016, 02, 19) <= parseSceneId(x)['date'] <= date(2016, 02, 27)) or\
+             (parseSceneId(x)['sensor'] == 'LC8' and date(2016, 8, 8) <= parseSceneId(x)['date'] <= date(2016, 8, 10)) or\
+             (parseSceneId(x)['sensor'] == 'LC8' and date(2015, 01, 30) <= parseSceneId(x)['date'] <= date(2015, 02, 19)) or\
+             (parseSceneId(x)['sensor'] == 'LC8' and date(2015, 03, 02) <= parseSceneId(x)['date'] <= date(2015, 03, 04)))
         return exp
 
     scene_list_clean = [x for x in scene_list if expression(x)]
