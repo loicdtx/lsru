@@ -95,3 +95,21 @@ def filterListLT4LO8(scene_list):
     scene_list_clean = [x for x in scene_list if (parseSceneId(x)['sensor'] != 'LO8') and (parseSceneId(x)['sensor'] != 'LT4')]
     return scene_list_clean
 
+def isValid(id):
+    """Check if a sceneID is valid
+
+    We've seen e.g. LT8 in the scene list returned by Earth Explorer API
+    That can't pass the checks 
+
+    Args:
+        id (string) string containing a Landsat scene ID
+
+    Returns:
+        Boolean
+    """
+    id_grep = re.compile("(LT4|LT5|LE7|LC8|LO8)\d{13}", re.IGNORECASE)
+    m = id_grep.match(id)
+    if m is None:
+        return False
+    else:
+        return True
