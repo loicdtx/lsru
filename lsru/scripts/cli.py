@@ -3,6 +3,7 @@ import csv
 from lsru.lsru import getSceneList, orderList
 from lsru import TODAY
 import click
+import requests
 
 @click.group()
 def lsru():
@@ -87,7 +88,10 @@ def sp_order(collection, long_0, lat_0, radius, filename, end_date, start_date, 
     scenelist = getSceneList(collection, long_0, lat_0, radius, filename,\
         end_date, start_date, api_key)
     r = orderList(username, password, scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, filename, radius, debug)
-    print r.text
+    if isinstance(r, requests.models.Response):
+        print r.text
+    else:
+        print r
 
 # username, password, scene_list, proj, resampling_method, resize, xmin = None,\
 # xmax = None, ymin = None, ymax = None, long_0=None, lat_0=None, filename=None,\
@@ -118,7 +122,10 @@ def order_batch(filename, collection, radius, start_date, end_date, proj, resamp
             end_date = end_date, start_date = start_date, api_key = api_key)
         r = orderList(username, password, scenelist, proj, resampling_method, resize,\
             long_0 = long_0, lat_0 = lat_0, radius = radius, debug = debug)
-        print r.text
+        if isinstance(r, requests.models.Response):
+            print r.text
+        else:
+            print r
     print "Order complete"
 
 lsru.add_command(query)

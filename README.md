@@ -194,6 +194,5 @@ pip install git+https://github.com/loicdtx/landsat-espa-util.git
 - python 3 ???
 - Add support for all espa projections
 - Pass comment to espa order
-- Make orderList not crash when empty scene_list is provided
 - Setup a downloader with schedule
 - Handle LT4
