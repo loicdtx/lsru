@@ -173,14 +173,53 @@ See [espa bulk downloader](https://github.com/USGS-EROS/espa-bulk-downloader).
 
 First you must have geos and gdal installed.
 
-```
-sudo apt-get install libgeos-dev libgdal1-dev
+```sh
+sudo apt-get install libgdal-dev # This also installs libgeos-dev
 ```
 
 Then, preferably in a virtualenv, run:
 
-```
+```sh
 pip install git+https://github.com/loicdtx/landsat-espa-util.git
+```
+
+## Step by step installation from scratch
+
+If you do not have anything setup (virtualenv, gdal, geos, git), follow the steps below.
+
+```sh
+# Install gdal and geos (geos directly comes as a dependency)
+$ sudo apt-get install libgdal-dev
+
+# Install pip (a package manager for python) and git (required to install directly from github)
+$ sudo apt-get install python-pip
+
+# Install virtualenv (virtual environments for python projects)
+$ sudo pip install virtualenv
+
+# Install virtualenvwrapper (Makes working with virtualenv easier)
+$ sudo pip install virtualenvwrapper
+
+# Finish setting up virtualenvwraper (of course if you use a different shell, export to the right config file)
+$ echo 'source /usr/local/bin/virtualenvwrapper.sh' >> ~/.bashrc
+$ source ~/.bashrc
+
+# Create a virtual environement
+$ mkvirtualenv landsat_download
+
+# You are now in the virtual environment
+# You can exit it by running 'deactivate'
+# And get back to it with 'workon landsat_download'
+
+# Install
+(landsat_download)$ pip install git+https://github.com/loicdtx/landsat-espa-util.git
+
+# As long as you stay in the virtual environment you can run the lsru commands
+(landsat_download)$ lsru --help
+
+# Exist virtualenv
+(landsat_download)$ deactivate
+$
 ```
 
 ![](https://i.imgflip.com/1c7eet.jpg)
