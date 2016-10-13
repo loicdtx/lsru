@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 
 # Self
-from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterList
+from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterListByDate, filterListLT4LO8
 from . import KEY_FILE
 
 #debug
@@ -178,11 +178,12 @@ class jsonBuilder(object):
 
 def orderList(username, password, scene_list, proj, resampling_method, resize, xmin = None, xmax = None, ymin = None, ymax = None, long_0=None, lat_0=None, filename=None, radius=None, debug=False):
     # Ensure that all items in the list belong to the same collection
+    scene_list = filterListLT4LO8(scene_list)
     collection = parseSceneId(scene_list[0])['sensor']
     if not all(parseSceneId(scene)['sensor'] == collection.upper() for scene in scene_list):
         raise ValueError('Not all elements of scenelist belong to the same collection')
     # Remove data that cannot be processed to SR
-    scene_list_clean = filterList(scene_list)
+    scene_list_clean = filterListByDate(scene_list)
     # convert sensor to espa conventions
     collection = makeEspaFileName(collection)
     # start building json object for request

@@ -2,7 +2,7 @@
 *Interface to ESPA API for Landsat surface reflectance data ordering*
 
 Before, downloading Landsat surface reflectance data for a given area meant:
-- Manually query the sceneIDs on Earth Explorer
+- Manually querying the sceneIDs on Earth Explorer
 - Saving these lists of sceneIDs to text files
 - Manually uploading these files to ESPA to place the order
 - Downloading the processed data with a download manager
@@ -58,8 +58,8 @@ Options:
                      retrieved and used for the spatial query
   --collection TEXT  Landsat collection to query from Earth Explorer (LT5, LE7
                      or LC8)
-  --long_0 FLOAT      Longitude of query point in decimal degrees
-  --lat_0 FLOAT       Latitude of query point in decimal degrees
+  --long_0 FLOAT     Longitude of query point in decimal degrees
+  --lat_0 FLOAT      Latitude of query point in decimal degrees
   --radius INTEGER   Square buffer radius in meters
   --start_date TEXT  Start date yyyy-mm-dd, defaults to 1982-07-15
   --end_date TEXT    End date yyyy-mm-dd, defasults to today
@@ -196,3 +196,4 @@ pip install git+https://github.com/loicdtx/landsat-espa-util.git
 - Pass comment to espa order
 - Make orderList not crash when empty scene_list is provided
 - Setup a downloader with schedule
+- Handle LT4
