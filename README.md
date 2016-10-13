@@ -192,7 +192,7 @@ If you do not have anything setup (virtualenv, gdal, geos, git), follow the step
 $ sudo apt-get install libgdal-dev
 
 # Install pip (a package manager for python) and git (required to install directly from github)
-$ sudo apt-get install python-pip
+$ sudo apt-get install python-pip git
 
 # Install virtualenv (virtual environments for python projects)
 $ sudo pip install virtualenv
