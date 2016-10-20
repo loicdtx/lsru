@@ -10,6 +10,7 @@ from usgs import api
 # Standard Library
 from datetime import datetime
 import os
+import json
 
 # Self
 from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterListByDate, filterListLT4LO8, isValid
@@ -238,3 +239,35 @@ def getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_da
     lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
     return lst
 
+
+### Download functions
+def getOrdersList(username, password):
+    r = requests.get("https://espa.cr.usgs.gov/api/v0/list-orders", auth=(username, password))
+    if r.status_code != 200:
+        print "Something went wrong with that request\n" + r.text
+    out = json.loads(r.text)['orders']
+    return out
+
+def getOrderDetails(order, username, password):
+    r = requests.get("https://espa.cr.usgs.gov/api/v0/order/" + order, auth=(username, password))
+    if r.status_code != 200:
+        print "Something went wrong with that request\n" + r.text
+    out = json.loads(r.text)
+    return out
+
+def isComplete(order):
+    return order['status'] == 'complete'
+
+def getDownloadUrl(order, sceneID, username, password):
+    r = requests.get("https://espa.cr.usgs.gov/api/v0/item-status/" + order + "/" + sceneID, auth=(username, password))
+    if r.status_code != 200:
+        print "Something went wrong with that request\n" + r.text
+    
+
+
+
+def getDownloadUrls(order,username,password):
+    sensors = ['tm4', 'tm5', 'etm7', 'olitirs8']
+    sensor = list(set(order['product_opts'].keys()).intersection(sensors))[0]
+    order['product_opts'][sensor]['inputs']
+    urls = [url for url in ]
