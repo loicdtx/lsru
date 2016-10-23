@@ -248,26 +248,48 @@ def getOrdersList(username, password):
     out = json.loads(r.text)['orders']
     return out
 
-def getOrderDetails(order, username, password):
-    r = requests.get("https://espa.cr.usgs.gov/api/v0/order/" + order, auth=(username, password))
+def getOrderDetails(order_id, username, password):
+    r = requests.get("https://espa.cr.usgs.gov/api/v0/order/" + order_id, auth=(username, password))
     if r.status_code != 200:
         print "Something went wrong with that request\n" + r.text
     out = json.loads(r.text)
     return out
 
-def isComplete(order):
-    return order['status'] == 'complete'
+def isComplete(order_dict):
+    return order_dict['status'] == 'complete'
 
-def getDownloadUrl(order, sceneID, username, password):
-    r = requests.get("https://espa.cr.usgs.gov/api/v0/item-status/" + order + "/" + sceneID, auth=(username, password))
+def getDownloadUrl(order_id, sceneID, username, password):
+    r = requests.get("https://espa.cr.usgs.gov/api/v0/item-status/" + order_id + "/" + sceneID, auth=(username, password))
     if r.status_code != 200:
         print "Something went wrong with that request\n" + r.text
-    
+    d = json.loads(r.text)
+    url = d['orderid'][order_id][0]['product_dload_url']
+    return url
 
 
 
-def getDownloadUrls(order,username,password):
+def getDownloadUrls(order_id, username, password):
+    order_dict = getOrderDetails(order_id, username, password)
+    if not isComplete(order_dict):
+        return []
     sensors = ['tm4', 'tm5', 'etm7', 'olitirs8']
-    sensor = list(set(order['product_opts'].keys()).intersection(sensors))[0]
-    order['product_opts'][sensor]['inputs']
-    urls = [url for url in ]
+    sensor = list(set(order_dict['product_opts'].keys()).intersection(sensors))[0]
+    scene_list = order_dict['product_opts'][sensor]['inputs']
+    url_list = [getDownloadUrl(order_dict['orderid'], scene, username, password) for scene in scene_list]
+    return url_list
+    return scene_list
+
+def download_file(url, write_dir):
+    directory = os.path.join(write_dir, url.split('/')[-2])
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    local_filename = os.path.join(write_dir, '/'.join(url.split('/')[-2:]))
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024): 
+            if chunk:
+                f.write(chunk)
+    return local_filename
+
+# TODO: Util to pass a list of orders (from simple ls > orders.txt) (implement directly in cli)
+# TODO: Organize all function as one class?
