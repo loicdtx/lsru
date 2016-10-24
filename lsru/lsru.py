@@ -222,7 +222,6 @@ def orderList(username, password, scene_list, proj, resampling_method, resize, x
     if r.status_code != 200:
         # raise ValueError('Something went wrong with the request')
         print "Something went wrong with that request"
-        return r.text
     return r
 
 
