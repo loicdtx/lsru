@@ -284,6 +284,8 @@ class espa_api(object):
             String (download URL for the scene)
         """
         scene_details = self.request('/'.join(['item-status', order_id, scene_id]))
+        if scene_details['orderid'][order_id][0]['status'] != 'complete':
+            return None
         url = scene_details['orderid'][order_id][0]['product_dload_url']
         return url
 
@@ -311,6 +313,8 @@ def getSceneList(order_details):
 def download_file(url, write_dir):
     """Pretty much a generic file download function
     """
+    if url is None:
+        return "Missing scene"
     directory = os.path.join(write_dir, url.split('/')[-2])
     if not os.path.exists(directory):
         os.makedirs(directory)
