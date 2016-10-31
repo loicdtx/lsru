@@ -10,6 +10,7 @@ from usgs import api
 # Standard Library
 from datetime import datetime
 import os
+import json
 
 # Self
 from .util import parseSceneId, makeEspaFileName, makeEeFileName, getUtmZone, mean, filterListByDate, filterListLT4LO8, isValid
@@ -238,3 +239,106 @@ def getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_da
     lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
     return lst
 
+
+
+
+class espa_api(object):
+    """Class to interact with espa api"""
+    def __init__(self, username, password, host = 'https://espa.cr.usgs.gov/api', version = 'v0'):
+        self.base_url = '/'.join([host, version])
+        self.username = username
+        self.password = password
+
+    def request(self, endpoint):
+        """Send GET request to the api
+
+        Returns:
+            Dictionary from the text slot of the request object
+        """
+        url = '/'.join([self.base_url, endpoint])
+        r = requests.get(url, auth=(self.username, self.password))
+        return json.loads(r.text)
+
+    def getOrdersList(self):
+        """Retrieves the list of all the currents espa orders
+        
+        Returns:
+            List of order strings
+        """
+        order_list = self.request('list-orders')
+        return order_list['orders']
+
+    def getOrderDetails(self, order_id):
+        """Retrieves the details of a given order
+
+        Return:
+            Dict with order metadata
+        """
+        order_details = self.request('/'.join(['order', order_id]))
+        return order_details
+
+    def getDownloadUrl(self, order_id, scene_id):
+        """Retrieves the download URL for a specific scene of a specific order
+
+        Return:
+            String (download URL for the scene)
+        """
+        scene_details = self.request('/'.join(['item-status', order_id, scene_id]))
+        url = scene_details['orderid'][order_id][0]['product_dload_url']
+        return url
+
+
+def isComplete(order_details):
+    """Logical test to check if an order is complete
+
+    Args:
+        order_details: Dict, object returned by espa_api.getOrderDetails()
+    """
+    return order_details['status'] == 'complete'
+
+
+def getSceneList(order_details):
+    """Retrieves the list of scenes from the dictionary collecting the details of an order
+
+    Args:
+        order_details: Dict
+    """
+    sensors = ['tm4', 'tm5', 'etm7', 'olitirs8']
+    sensor = list(set(order_details['product_opts'].keys()).intersection(sensors))[0]
+    scene_list = order_details['product_opts'][sensor]['inputs']
+    return scene_list
+
+def download_file(url, write_dir):
+    """Pretty much a generic file download function
+    """
+    directory = os.path.join(write_dir, url.split('/')[-2])
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    local_filename = os.path.join(directory, url.split('/')[-1])
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024): 
+            if chunk:
+                f.write(chunk)
+    return local_filename
+
+
+# Usage (username, password, data_dir, overwrite = False)
+def download_all(username, password, data_dir, overwrite = False, host = 'https://espa.cr.usgs.gov/api', version = 'v0'):
+    """Wrapper to download all processed orders
+
+    To be called by the comand line
+    """
+    api = espa_api(username, password)
+    orders = api.getOrdersList()
+    if not overwrite: 
+        orders = list(set(orders).difference(os.listdir(data_dir)))
+    for order in orders:
+        order_dict = api.getOrderDetails(order)
+        if isComplete(order_dict): # Only download completed orders
+            scene_list = getSceneList(order_dict)
+            for scene in scene_list:
+                url = api.getDownloadUrl(order, scene)
+                file_out = download_file(url, data_dir)
+                pprint(file_out + ' downloaded!')
+        

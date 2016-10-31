@@ -39,6 +39,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
+  download     Download all scenes from all completed orders
   login        Login to USGS Earth Explorer api Key expires...
   order        Place espa order for a list of Landsat scenes...
   order_batch  Query and order data from a list of...
@@ -166,7 +167,15 @@ lsru order_batch --collection LE7 --radius 2000 --proj aea --start_date 2014-01-
 
 ### Download data
 
-See [espa bulk downloader](https://github.com/USGS-EROS/espa-bulk-downloader).
+`lsru` provides a download utility. Although not as fancy as the [espa bulk downloader](https://github.com/USGS-EROS/espa-bulk-downloader), it is significantly faster, and that's the only reason that justifies its existence.
+
+The tool downloads all scenes from all completed orders and organizes them with one folder by order on your local system. By default orders that have already been downloaded are not re-downloaded, however, contrary to the espa bulk downloader, there are no checks for file integrity and if for some reasons the download breaks in the middle of an order, you'll have to find out which directory corresponds to the incomplete order and delete it before re-launching the command.
+
+An example usage
+
+```sh
+lsru download --data_dir /directory/where/you/store/your/data
+```
 
 
 ## Installing landsat-espa-util

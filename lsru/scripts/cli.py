@@ -1,9 +1,10 @@
 from usgs import api
 import csv
-from lsru.lsru import getSceneList, orderList
+from lsru.lsru import getSceneList, orderList, download_all
 from lsru import TODAY
 import click
 import requests
+from pprint import pprint
 
 @click.group()
 def lsru():
@@ -128,9 +129,25 @@ def order_batch(filename, collection, radius, start_date, end_date, proj, resamp
             print r
     print "Order complete"
 
+@click.command()
+@click.option('--username', prompt='USGS username', help = 'Wait for prompt')
+@click.option('--password', prompt='USGS password', help = 'Wait for prompt', hide_input=True)
+@click.option('--data_dir', help = 'Local directory where to download the data', required = True)
+@click.option('--overwrite/--no-overwrite', default = False, help = 'if --no-overwrite (default), only downloads orders that are not present in --data_dir, otherwise all completed orders are downloaded regardless of directories present in --data_dir')
+@click.option('--host', help = 'API host', default = 'https://espa.cr.usgs.gov/api')
+@click.option('--version', help = 'API version', default = 'v0')
+def download(username, password, data_dir, overwrite, host, version):
+    """Download all scenes from all completed orders
+    """
+    download_all(username, password, data_dir, overwrite, host, version)
+    pprint('Download complete !!')
+
+
+
 lsru.add_command(query)
 lsru.add_command(login)
 lsru.add_command(order)
 lsru.add_command(sp_order)
 lsru.add_command(order_batch)
+lsru.add_command(download)
 
