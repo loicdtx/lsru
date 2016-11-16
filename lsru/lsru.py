@@ -299,7 +299,7 @@ def isComplete(order_details):
     return order_details['status'] == 'complete'
 
 
-def getSceneList(order_details):
+def getDlSceneList(order_details):
     """Retrieves the list of scenes from the dictionary collecting the details of an order
 
     Args:
@@ -340,7 +340,7 @@ def download_all(username, password, data_dir, overwrite = False, host = 'https:
     for order in orders:
         order_dict = api.getOrderDetails(order)
         if isComplete(order_dict): # Only download completed orders
-            scene_list = getSceneList(order_dict)
+            scene_list = getDlSceneList(order_dict)
             for scene in scene_list:
                 url = api.getDownloadUrl(order, scene)
                 file_out = download_file(url, data_dir)
