@@ -226,7 +226,7 @@ def orderList(username, password, scene_list, proj, resampling_method, resize, x
     return r
 
 
-def getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_date, api_key):
+def getSceneList(collection, end_date, start_date, api_key, long_0 = None, lat_0 = None, xmin = None, xmax = None, ymin = None, ymax = None, radius = None, filename = None):
     if api_key is None:
         with open(KEY_FILE) as src:
             api_key = src.read()
@@ -235,6 +235,8 @@ def getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_da
         extent = extent_geo.fromCenterAndRadius(long_0, lat_0, radius)
     if filename:
         extent = extent_geo.fromFile(filename)
+    if xmin and xmax and ymin and ymax:
+        extent = extent_geo(xmin, xmax, ymin, ymax)
     ll, ur = extent.getCorners()
     lst = querySceneLists(collection, ll, ur, start_date, end_date, api_key)
     return lst

@@ -33,7 +33,7 @@ def login(username, password):
 def query(collection, long_0, lat_0, radius, filename, end_date, start_date, api_key):
     """Perform a spatial query on the Earth Explorer API
     """
-    lst = getSceneList(collection, long_0, lat_0, radius, filename, end_date, start_date, api_key)
+    lst = getSceneList(collection, long_0 = long_0, lat_0 = lat_0, radius = radius, filename = filename, end_date = end_date, start_date = start_date, api_key = api_key)
     print'\n'.join(lst)
 
 @click.command()
@@ -86,8 +86,8 @@ def order(scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, lo
 def sp_order(collection, long_0, lat_0, radius, filename, end_date, start_date, proj, resampling_method, resize, xmin, xmax, ymin, ymax, api_key, username, password, debug):
     """Query and order data for a given location
     """
-    scenelist = getSceneList(collection, long_0, lat_0, radius, filename,\
-        end_date, start_date, api_key)
+    scenelist = getSceneList(collection, long_0 = long_0, lat_0 = lat_0, xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, radius = radius, filename = filename,\
+        end_date = end_date, start_date= start_date, api_key = api_key)
     r = orderList(username, password, scenelist, proj, resampling_method, resize, xmin, xmax, ymin, ymax, long_0, lat_0, filename, radius, debug)
     if isinstance(r, requests.models.Response):
         print r.text
@@ -119,7 +119,7 @@ def order_batch(filename, collection, radius, start_date, end_date, proj, resamp
     for coord in coord_list:
         long_0 = float(coord[0])
         lat_0 = float(coord[1])
-        scenelist = getSceneList(collection, long_0, lat_0, radius,filename = None,\
+        scenelist = getSceneList(collection, long_0 = long_0, lat_0 = lat_0, radius = radius, filename = None,\
             end_date = end_date, start_date = start_date, api_key = api_key)
         r = orderList(username, password, scenelist, proj, resampling_method, resize,\
             long_0 = long_0, lat_0 = lat_0, radius = radius, debug = debug)
