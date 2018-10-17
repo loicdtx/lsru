@@ -1,5 +1,48 @@
 import os
-from datetime import datetime
+import urllib.parse
+import datetime
+import configparser
+import requests
 
-KEY_FILE = os.path.expanduser('~/.usgs')
-TODAY = str(datetime.today().date())
+
+class Usgs(object):
+    def __init__(self, version='stable'):
+        try:
+            config = configparser.ConfigParser()
+            config.read(os.path.expanduser('~/.lsru'))
+            self.USER = config['usgs']['username']
+            self.PASSWORD = config['usgs']['password']
+            self.endpoint = '/'.join(['https://earthexplorer.usgs.gov/inventory/json/v',
+                                      version])
+            self.key = None
+            self.key_dt = None
+        except Exception as e:
+            raise StandardError('There must be a valid configuration file to instantiate this class')
+
+
+    @property
+    def key_age(self):
+        if self.key_dt is None:
+            raise ValueError('key_age is not defined, you probably need to run login()')
+        return datetime.datetime.now() - self.key_dt
+
+
+    def login(self):
+        login_endpoint = '/'.join([self.endpoint, 'login'])
+        print(login_endpoint)
+        r = requests.post(login_endpoint, json={'username': self.USER,
+                                                 'password': self.PASSWORD})
+        return r
+
+
+    def search(self, bbox):
+        if self.key_age > datetime.timedelta(0, 3600):
+            raise ValueError('Api key has probably expired (1 hr), re-run the login method')
+        pass
+
+
+usgs = Usgs()
+r = usgs.login()
+print(r.json())
+
+

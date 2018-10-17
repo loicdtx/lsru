@@ -3,6 +3,30 @@ import math
 from datetime import datetime, date
 
 
+def bounds(geom):
+    """Return a bounding box from a geometry
+
+    Args:
+        geom (dict): Geojson like geometry
+
+    Returns:
+        Tuple: Bounding box (left, bottom, right, top)
+    """
+    pass
+
+
+def geom_from_metadata(meta):
+    """Return a geometry from a Landsat scene metadata as returned by USGS api
+
+    Args:
+        meta (dict): Landsat scene metadata as returned by Usgs Api
+
+    Returns:
+        dict: GeoJson like geometry. CRS is always in longlat (EPSG:4326)
+    """
+    pass
+
+
 def parseSceneId(id):
     """Landsat sceneID parser
 
