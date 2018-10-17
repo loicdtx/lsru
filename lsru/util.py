@@ -24,7 +24,20 @@ def geom_from_metadata(meta):
     Returns:
         dict: GeoJson like geometry. CRS is always in longlat (EPSG:4326)
     """
-    pass
+    geom = {'type': 'Polygon',
+            'coordinates': [[
+                [meta['lowerLeftCoordinate']['longitude'],
+                 meta['lowerLeftCoordinate']['latitude']],
+                [meta['upperLeftCoordinate']['longitude'],
+                 meta['upperLeftCoordinate']['latitude']],
+                [meta['upperRightCoordinate']['longitude'],
+                 meta['upperRightCoordinate']['latitude']],
+                [meta['lowerRightCoordinate']['longitude'],
+                 meta['lowerRightCoordinate']['latitude']],
+                [meta['lowerLeftCoordinate']['longitude'],
+                 meta['lowerLeftCoordinate']['latitude']]
+            ]]}
+    return geom
 
 
 def parseSceneId(id):
