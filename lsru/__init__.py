@@ -1,9 +1,11 @@
 import os
+import json
 import urllib.parse
 import datetime
 import configparser
 import requests
 
+from pprint import pprint
 
 class Usgs(object):
     def __init__(self, version='stable'):
@@ -29,20 +31,19 @@ class Usgs(object):
 
     def login(self):
         login_endpoint = '/'.join([self.endpoint, 'login'])
-        print(login_endpoint)
-        r = requests.post(login_endpoint, json={'username': self.USER,
-                                                 'password': self.PASSWORD})
-        return r
+        r = requests.post(login_endpoint,
+                          data={'jsonRequest': json.dumps({'username': self.USER,
+                                                           'password': self.PASSWORD})})
+        if r.json()['errorCode'] is not None:
+            return False
+        self.key = r.json()['data']
+        self.key_dt = datetime.datetime.now()
+        return True
 
 
     def search(self, bbox):
         if self.key_age > datetime.timedelta(0, 3600):
             raise ValueError('Api key has probably expired (1 hr), re-run the login method')
         pass
-
-
-usgs = Usgs()
-r = usgs.login()
-print(r.json())
 
 
