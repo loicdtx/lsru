@@ -3,9 +3,10 @@ import json
 import urllib.parse
 import datetime
 import configparser
-import requests
-
 from pprint import pprint
+import requests
+import abc
+
 
 class Usgs(object):
     def __init__(self, version='stable'):
@@ -61,7 +62,8 @@ class Usgs(object):
         return True
 
 
-    def search(self, collection, bbox, begin=None, end=None, max_cloud_cover=100):
+    def search(self, collection, bbox, begin=None, end=None, max_cloud_cover=100,
+               months=None, starting_number=1, max_results=50000):
         """Perform a spatio temporal query on Landsat catalog
 
         Args:
@@ -73,6 +75,13 @@ class Usgs(object):
             begin (datetime.datetime): Optional begin date
             end (datetime.datetime): Optional end date
             max_cloud_cover (int): Cloud cover threshold to use for the query
+            months (list): List of month indices (1,12) for only limiting the query
+                to these months
+            max_results (int): Maximum number of scenes to return
+            starting_number (int): Used to determine the result number to start
+                returning from. Is meant to be used when the total number of hits
+                is higher than ``max_results``, to return results in a paginated
+                fashion
 
         Example:
             >>> from lsru import Usgs
@@ -99,13 +108,188 @@ class Usgs(object):
                   'lowerLeft': {'latitude': bbox[1],
                                 'longitude': bbox[0]},
                   'upperRight': {'latitude': bbox[3],
-                                 'longitude': bbox[2]}}
+                                 'longitude': bbox[2]},
+                  'maxResults': max_results,
+                  'startingNumber': starting_number}
         if begin is not None:
             params.update(startDate=begin.isoformat())
         if end is not None:
             params.update(endDate=end.isoformat())
+        if months is not None:
+            params.update(months=months)
         r = requests.post(search_endpoint,
                           data={'jsonRequest': json.dumps(params)})
         return r.json()['data']['results']
+
+
+class EspaBase(metaclass=abc.ABCMeta):
+    def __init__(self):
+        try:
+            config = configparser.ConfigParser()
+            config.read(os.path.expanduser('~/.lsru'))
+            self.USER = config['usgs']['username']
+            self.PASSWORD = config['usgs']['password']
+            self.host = 'https://espa.cr.usgs.gov/api/v1'
+        except Exception as e:
+            raise StandardError('There must be a valid configuration file to instantiate this class')
+
+
+    def _request(self, endpoint, verb='get', body=None):
+        """Generic interface to ESPA api
+
+        Adapted from Jake Brinkmann's example in
+        https://github.com/USGS-EROS/espa-api/blob/master/examples/api_demo.ipynb
+
+        Args:
+            endpoint (str): Api endpoint to call
+            verb (str): Request verb (get, post, put ...)
+            body (dict): Data to pass to the request
+        """
+        auth_tup = (self.USER, self.PASSWORD)
+        response = getattr(requests, verb)('/'.join([self.host,  endpoint]),
+                                           auth=auth_tup, json=body)
+        data = response.json()
+        if isinstance(data, dict):
+            messages = data.pop("messages", None)
+            if messages:
+                pprint(messages)
+        response.raise_for_status()
+        return data
+
+
+class Espa(EspaBase):
+    def __init__(self):
+        super().__init__()
+        self._projections = None
+        self._formats = None
+        self._resampling_methods = None
+        self._user = None
+
+
+    def order(self, scene_list, products, format='gtiff', note=None):
+        """Place a pre-procesing order to espa
+
+        Args:
+            scene_list (list): List of Landsat scene ids
+            products (list): List of products to order for pre-processing
+                See ``Espa.get_available_products()`` to get information on available
+                products
+            format (str): Pre-processing file format. See Espa.formats for information
+                on available formats
+            note (str): Optional human readable message to pass to the order
+
+        Example:
+            >>> from lsru import Espa, Usgs
+            >>> import datetime
+            >>> espa = Espa()
+            >>> usgs = Usgs()
+            >>> usgs.login()
+            >>> scene_list = usgs.search(collection='LANDSAT_8_C1',
+            ...                          bbox=(3.5, 43.4, 4, 44),
+            ...                          begin=datetime.datetime(2014,1,1),
+            ...                          end=datetime.datetime(2018,1,1))
+            >>> scene_list = [x['displayId'] for x in scene_list]
+            >>> print(scene_list)
+
+
+        Return:
+            dict: The method is mostly used for its side effect of placing a
+            pre-processing order on the espa platform. It also returns a dictionary
+            containing order information
+        """
+        if note is None:
+            note = 'order placed on %s' % datetime.datetime.now().isoformat()
+        prods = self.get_available_products(scene_list)
+        prods.pop('not_implemented', None)
+        def prepare_dict(d):
+            d['products'] = products
+            return d
+        params = {k:prepare_dict(v) for k,v in prods.items()}
+        params.update(format=format)
+        params.update(note=note)
+        order_meta = self._request('order', verb='post', body=params)
+        return order_meta
+
+
+    @property
+    def projections(self):
+        if self._projections is None:
+            self._projections = self._request('projections')
+        return self._projections
+
+
+    def get_available_products(self, scene_list):
+        """Get the list of available products for each elements of a list of scene ids
+
+        Args:
+            scene_list (list): List of scene ids
+
+        Example:
+            >>> from lsru import Espa
+            >>> espa = Espa()
+            >>> print(espa.get_available_products([
+            ...     'LE07_L1TP_029030_20170221_20170319_01_T1'
+            ... ]))
+
+
+        Return:
+            dict: Information on products available for each element of the input
+                list provided
+        """
+        return self._request('available-products', body={'inputs': scene_list})
+
+
+    @property
+    def formats(self):
+        if self._formats is None:
+            self._formats = self._request('formats')
+        return self._formats
+
+
+    @property
+    def resampling_methods(self):
+        if self._resampling_methods is None:
+            self._resampling_methods = self._request('resampling-methods')
+        return self._resampling_methods
+
+
+    @property
+    def user(self):
+        if self._user is None:
+            self._user = self._request('user')
+        return self._user
+
+
+    @property
+    def orders(self):
+        order_list = self._request('list-orders',
+                                   body={'status': ['complete', 'ordered']})
+        return [Order(x) for x in order_list]
+
+
+class Order(EspaBase):
+    def __init__(self, orderid):
+        super().__init__()
+        self.orderid = orderid
+
+    @property
+    def status(self):
+        return self._request('order-status/%s' % self.orderid)['status']
+
+    @property
+    def items_status(self):
+        return self._request('item-status/%s' % self.orderid)[self.orderid]
+
+    @property
+    def urls_completed(self):
+        item_list = self.items_status
+        url_list = [x['product_dload_url'] for x in item_list
+                    if x['status'] == 'complete']
+        return url_list
+
+
+    def cancel(self):
+        cancel_request = {"orderid": self.orderid, "status": "cancelled"}
+        return self._request('order', verb='put', body=cancel_request)
 
 
