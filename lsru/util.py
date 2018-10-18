@@ -40,6 +40,29 @@ def geom_from_metadata(meta):
     return geom
 
 
+def is_valid(id):
+    """Landsat scene id validity checker
+    """
+    pass
+
+
+def url_retrieve(url, write_dir):
+    """Pretty much a generic file download function
+    """
+    if url is None:
+        return "Missing scene"
+    directory = os.path.join(write_dir, url.split('/')[-2])
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    local_filename = os.path.join(directory, url.split('/')[-1])
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    return local_filename
+
+
 def parseSceneId(id):
     """Landsat sceneID parser
 
@@ -94,43 +117,6 @@ def mean(numbers):
     return float(sum(numbers)) / len(numbers)
 
 
-def filterListByDate(scene_list):
-    """Remove scenes that cannot be processed to SR
-    
-    From http://landsat.usgs.gov//CDR_LSR.php
-    Due to missing auxiliary input data and/or necessary thermal data, Surface Reflectance processing cannot be applied to data acquired during the dates listed below.
-
-    Landsat 8
-    2015:January 30 to February 19 (DOY 30 to 50)Thermal data unavailable*
-     March 2 to March 4 (DOY 61 to 63)Thermal data unavailable
-
-    2016:February 19 to February 27 (DOY 50 to 58)Auxiliary data unavailable
-     August 8 to August 10 (DOY 221 to 223)Auxiliary data unavailable
-    *Thermal data unavailable for select path/rows; see May 8, 2015 calibration notice for details.
-
-    Landsat 7
-    2016:May 30 to June 12 (DOY 151 to 164)Auxiliary data unavailable
-    """
-    # TODO: Find a cleaner way to perform the filtering
-    def expression(x):
-        exp = not ((parseSceneId(x)['sensor'] == 'LE7' and date(2016, 05, 30) <= parseSceneId(x)['date'] <= date(2016, 06, 12)) or\
-             (parseSceneId(x)['sensor'] == 'LC8' and date(2016, 02, 19) <= parseSceneId(x)['date'] <= date(2016, 02, 27)) or\
-             (parseSceneId(x)['sensor'] == 'LC8' and date(2016, 8, 8) <= parseSceneId(x)['date'] <= date(2016, 8, 10)) or\
-             (parseSceneId(x)['sensor'] == 'LC8' and date(2015, 01, 30) <= parseSceneId(x)['date'] <= date(2015, 02, 19)) or\
-             (parseSceneId(x)['sensor'] == 'LC8' and date(2015, 03, 02) <= parseSceneId(x)['date'] <= date(2015, 03, 04)))
-        return exp
-
-    scene_list_clean = [x for x in scene_list if expression(x)]
-    return scene_list_clean
-        
-def filterListLT4LO8(scene_list):
-    """Remove LT4 and LO8 entries from a list of sceneIDs
-
-    LO8 cannot be brought to SR, while LT4 and LT5 are the same collection in Earth Explorer
-    but need to be ordered separately on espa. Which makes it a bit complex to include.
-    """
-    scene_list_clean = [x for x in scene_list if (parseSceneId(x)['sensor'] != 'LO8') and (parseSceneId(x)['sensor'] != 'LT4')]
-    return scene_list_clean
 
 def isValid(id):
     """Check if a sceneID is valid

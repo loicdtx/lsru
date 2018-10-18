@@ -17,14 +17,5 @@ setup(name='lsru',
       license='GPLv3',
       packages=find_packages(),
       install_requires=[
-          'shapely',
-          'fiona',
-          'pyproj',
           'requests',
-          'Click',
-      ],
-      entry_points="""
-      [console_scripts]
-      lsru=lsru.scripts.cli:lsru
-      """
-      )
+      ])
