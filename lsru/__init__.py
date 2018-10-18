@@ -29,6 +29,24 @@ class Usgs(object):
         return datetime.datetime.now() - self.key_dt
 
 
+    @staticmethod
+    def get_collection_name(num):
+        """Get Earth Explorer Landsat collection names
+
+        Args:
+            num (int): Landsat spacecraft number (4, 5, 7 or 8)
+
+        Returns:
+            str: Earth Explorer collection name formated to i.e.: pass to the
+                search method
+        """
+        collections = {4: 'LANDSAT_TM_C1',
+                       5: 'LANDSAT_TM_C1',
+                       7: 'LANDSAT_ETM_C1',
+                       8: 'LANDSAT_8_C1'}
+        return collection[num]
+
+
     def login(self):
         """Login to the Usgs api
         """
