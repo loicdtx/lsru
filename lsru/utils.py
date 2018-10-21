@@ -3,6 +3,8 @@ import os
 import math
 from datetime import datetime, date
 
+import requests
+
 
 def bounds(geom):
     """Return a bounding box from a geometry

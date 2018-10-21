@@ -1,11 +1,13 @@
 import os
 import json
-import urllib.parse
 import datetime
 import configparser
 from pprint import pprint
-import requests
 import abc
+
+import requests
+
+from .utils import url_retrieve
 
 
 class Usgs(object):
@@ -311,5 +313,20 @@ class Order(EspaBase):
     def cancel(self):
         cancel_request = {"orderid": self.orderid, "status": "cancelled"}
         return self._request('order', verb='put', body=cancel_request)
+
+    def download_all_complete(self, path):
+        """Download all completed scenes of the order to a folder
+
+        Args:
+            path (str): Directory where data are to be downloaded
+
+        Returns:
+            Used for its side effect of batch downloading data, no return
+        """
+        for url in self.urls_completed:
+            filename = url.split('/')[-1]
+            dst = os.path.join(path, filename)
+            print('Downloading %s' % filename)
+            url_retrieve(url, dst)
 
 
