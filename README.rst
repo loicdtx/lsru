@@ -89,6 +89,45 @@ Usage
     {'orderid': 'espa-loic.dutrieux@wur.nl-10212018-102816-245',
      'status': 'ordered'}
 
+.. code:: python
+
+    from lsru import Espa, Usgs
+    import datetime
+    from pprint import pprint
+
+    bbox = (3.5, 43.4, 4, 44)
+
+    usgs = Usgs()
+    usgs.login()
+    # Query the Usgs api to find scene intersecting with the spatio-temporal window
+    scene_list = usgs.search(collection='LANDSAT_8_C1',
+                             bbox=bbox,
+                             begin=datetime.datetime(2013,1,1),
+                             end=datetime.datetime(2016,1,1),
+                             max_results=10,
+                             max_cloud_cover=40)
+    # The espa api require a list of scenes names, which are contained in displayId key of scene metadata
+    scene_list = [x['displayId'] for x in scene_list]
+
+    # Instantiate Espa class
+    espa = Espa()
+    # Inspect aea projection parameters
+    pprint(espa.projections['aea'])
+    # Define projection parameters
+    proj_params = {'aea': {'central_meridian': 3.8,
+                           'datum': 'wgs84',
+                           'false_easting': 0,
+                           'false_northing': 0,
+                           'latitude_of_origin': 43.7,
+                           'standard_parallel_1': 44,
+                           'standard_parallel_2': 43}}
+    # Place order
+    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'],
+                            note='cropped order with resampling', projection=proj_params,
+                            extent=bbox, resolution=60)
+    pprint(order_meta)
+
+
 Installing landsat-espa-util
 ----------------------------
 
