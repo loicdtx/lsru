@@ -165,8 +165,9 @@ class Espa(EspaBase):
         self._resampling_methods = None
         self._user = None
 
-
-    def order(self, scene_list, products, format='gtiff', note=None):
+    def order(self, scene_list, products, format='gtiff', note=None,
+              resampling='nn', resolution=None, projection=None,
+              extent=None, extent_units='dd'):
         """Place a pre-procesing order to espa
 
         Args:
@@ -177,6 +178,23 @@ class Espa(EspaBase):
             format (str): Pre-processing file format. See Espa.formats for information
                 on available formats
             note (str): Optional human readable message to pass to the order
+            resampling (str): Resamping method to be used when reprojecting or
+                resizing ordered images. See ``Espa.resampling_methods`` for valid
+                values.
+            resolution (float): Ouput resolution (optional). If specified, the
+                pre-processing order will be resized to the specified resolution.
+                If set to None (default), no resizing is performed and products
+                are processed at their original resolution (usually 30m).
+            projection (dict): Optional dictionary with projection name and
+                projection parameter values. Ordered products are re-projected
+                to the specified projection when set. See ``Espa.projections``
+                for list and format of supported projections
+            extent (tuple): Bounding box to use to crop the pre-processed products
+                bounding box is in the form of a (left, bottom, right, top) tuple.
+                This is optional and requires a projection to be set.
+            extent_units (str): Units of the provided extent. ``'dd'`` (decimal
+                degrees) is the default. If ```meters'`` bounds are specified
+                according to the coordinate reference system space.
 
         Example:
             >>> from lsru import Espa, Usgs
@@ -205,18 +223,25 @@ class Espa(EspaBase):
             d['products'] = products
             return d
         params = {k:prepare_dict(v) for k,v in prods.items()}
-        params.update(format=format)
-        params.update(note=note)
+        params.update(format=format, note=note,
+                      resampling_methods=resampling)
+        if resolution is not None:
+            params.update(resize={'pixel_size': resolution,
+                                  'pixel_size_units': 'meters'})
+        if projection is not None:
+            params.update(projection=projection)
+            if extent is not None:
+                extent_dict = dict(zip(('west', 'south', 'east', 'north'), extent))
+                extent_dict.update(units=extent_units)
+                params.update(image_extents=extent_dict)
         order_meta = self._request('order', verb='post', body=params)
         return order_meta
-
 
     @property
     def projections(self):
         if self._projections is None:
             self._projections = self._request('projections')
         return self._projections
-
 
     def get_available_products(self, scene_list):
         """Get the list of available products for each elements of a list of scene ids
@@ -238,13 +263,11 @@ class Espa(EspaBase):
         """
         return self._request('available-products', body={'inputs': scene_list})
 
-
     @property
     def formats(self):
         if self._formats is None:
             self._formats = self._request('formats')
         return self._formats
-
 
     @property
     def resampling_methods(self):
@@ -252,13 +275,11 @@ class Espa(EspaBase):
             self._resampling_methods = self._request('resampling-methods')
         return self._resampling_methods
 
-
     @property
     def user(self):
         if self._user is None:
             self._user = self._request('user')
         return self._user
-
 
     @property
     def orders(self):
@@ -286,7 +307,6 @@ class Order(EspaBase):
         url_list = [x['product_dload_url'] for x in item_list
                     if x['status'] == 'complete']
         return url_list
-
 
     def cancel(self):
         cancel_request = {"orderid": self.orderid, "status": "cancelled"}
