@@ -224,7 +224,7 @@ class Espa(EspaBase):
             return d
         params = {k:prepare_dict(v) for k,v in prods.items()}
         params.update(format=format, note=note,
-                      resampling_methods=resampling)
+                      resampling_method=resampling)
         if resolution is not None:
             params.update(resize={'pixel_size': resolution,
                                   'pixel_size_units': 'meters'})
