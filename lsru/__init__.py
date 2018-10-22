@@ -11,10 +11,10 @@ from .utils import url_retrieve
 
 
 class Usgs(object):
-    def __init__(self, version='stable'):
+    def __init__(self, version='stable', conf=os.path.expanduser('~/.lsru')):
         try:
             config = configparser.ConfigParser()
-            config.read(os.path.expanduser('~/.lsru'))
+            config.read(conf)
             self.USER = config['usgs']['username']
             self.PASSWORD = config['usgs']['password']
             self.endpoint = '/'.join(['https://earthexplorer.usgs.gov/inventory/json/v',
@@ -24,13 +24,11 @@ class Usgs(object):
         except Exception as e:
             raise StandardError('There must be a valid configuration file to instantiate this class')
 
-
     @property
     def key_age(self):
         if self.key_dt is None:
             raise ValueError('key_age is not defined, you probably need to run login()')
         return datetime.datetime.now() - self.key_dt
-
 
     @staticmethod
     def get_collection_name(num):
@@ -49,7 +47,6 @@ class Usgs(object):
                        8: 'LANDSAT_8_C1'}
         return collection[num]
 
-
     def login(self):
         """Login to the Usgs api
         """
@@ -62,7 +59,6 @@ class Usgs(object):
         self.key = r.json()['data']
         self.key_dt = datetime.datetime.now()
         return True
-
 
     def search(self, collection, bbox, begin=None, end=None, max_cloud_cover=100,
                months=None, starting_number=1, max_results=50000):
@@ -125,16 +121,15 @@ class Usgs(object):
 
 
 class EspaBase(metaclass=abc.ABCMeta):
-    def __init__(self):
+    def __init__(self, conf):
         try:
             config = configparser.ConfigParser()
-            config.read(os.path.expanduser('~/.lsru'))
+            config.read(conf)
             self.USER = config['usgs']['username']
             self.PASSWORD = config['usgs']['password']
             self.host = 'https://espa.cr.usgs.gov/api/v1'
         except Exception as e:
             raise StandardError('There must be a valid configuration file to instantiate this class')
-
 
     def _request(self, endpoint, verb='get', body=None):
         """Generic interface to ESPA api
@@ -160,8 +155,8 @@ class EspaBase(metaclass=abc.ABCMeta):
 
 
 class Espa(EspaBase):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, conf=os.path.expanduser('~/.lsru')):
+        super().__init__(conf=conf)
         self._projections = None
         self._formats = None
         self._resampling_methods = None
@@ -291,13 +286,17 @@ class Espa(EspaBase):
 
 
 class Order(EspaBase):
-    def __init__(self, orderid):
-        super().__init__()
+    def __init__(self, orderid, conf=os.path.expanduser('~/.lsru')):
+        super().__init__(conf=conf)
         self.orderid = orderid
 
     @property
     def status(self):
         return self._request('order-status/%s' % self.orderid)['status']
+
+    @property
+    def is_complete(self):
+        return True if self.status == 'complete' else False
 
     @property
     def items_status(self):
