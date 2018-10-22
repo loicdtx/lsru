@@ -84,6 +84,13 @@ Check current orders status
         # Orders have their own class with attributes and methods
         print('%s: %s' % (order.orderid, order.status))
 
+    # espa-loic.dutrieux@wur.nl-10222018-062836-330: ordered
+    # espa-loic.dutrieux@wur.nl-10212018-174321-508: complete
+    # espa-loic.dutrieux@wur.nl-10212018-174430-792: complete
+    # espa-loic.dutrieux@wur.nl-10212018-102816-245: complete
+    # espa-loic.dutrieux@wur.nl-10182018-100137-786: complete
+
+
 Download completed orders. When Espa finishes pre-processing an order, its status 
 changes to ``complete``, we can then download the processed scenes.
 
@@ -127,7 +134,7 @@ Setup
 -----
 
 The package requires a configuration file in which usgs credentials are written. 
-By default the file is called ``~/.lsru`` (this can be modified if you want to join) 
+By default the file is called ``~/.lsru`` (this can be modified if you want to join 
 this configuration with the configuration of another project) and has the following structure.
 
 ::
