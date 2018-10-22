@@ -9,6 +9,8 @@ import requests
 
 from .utils import url_retrieve
 
+__version__ = "0.3.0"
+
 
 class Usgs(object):
     def __init__(self, version='stable', conf=os.path.expanduser('~/.lsru')):

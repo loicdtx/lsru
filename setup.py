@@ -1,13 +1,18 @@
 from setuptools import setup, find_packages
 import os
 
-# Create directory to store download logs
-# if not os.path.exists(os.path.expanduser('~/.landespa')):
-#     os.makedirs(os.path.expanduser('~/.landespa'))
+# Parse the version from the main __init__.py
+with open('lsru/__init__.py') as f:
+    for line in f:
+        if line.find("__version__") >= 0:
+            version = line.split("=")[1].strip()
+            version = version.strip('"')
+            version = version.strip("'")
+            continue
 
 
 setup(name='lsru',
-      version='0.2.4',
+      version=version,
       description=u"Access the ESPA API for Landsat surface reflectance data ordering and download",
       classifiers=[],
       keywords='landsat, API, espa, usgs',
