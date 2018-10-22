@@ -5,15 +5,138 @@ Landsat-ESPA-util
 ordering*
 
 Before, downloading Landsat surface reflectance data for a given area
-meant: - Manually querying the sceneIDs on Earth Explorer - Saving these
-lists of sceneIDs to text files - Manually uploading these files to ESPA
-to place the order - Downloading the processed data with a download
-manager
+meant:
+
+    - Manually querying the sceneIDs on Earth Explorer
+    - Saving these lists of sceneIDs to text files
+    - Manually uploading these files to ESPA to place the order
+    - Downloading the processed data with a download manager
 
 Now, thanks to `USGS
 API <https://earthexplorer.usgs.gov/inventory/documentation/json-api>`__,
 and `espa API <https://github.com/USGS-EROS/espa-api>`__ it can all be
 done programtically.
+
+
+Example
+-------
+
+Send a spatio-temporal query to the Usgs API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Used to retrieve a list of available scenes metadata
+
+
+.. code:: python
+
+    from lsru import Usgs
+    import datetime
+
+    # Define query extent
+    bbox = (3.5, 43.4, 4, 44)
+
+    # Instantiate Usgs class and login
+    usgs = Usgs()
+    usgs.login()
+
+    # Query the Usgs api to find scene intersecting with the spatio-temporal window
+    scene_list = usgs.search(collection='LANDSAT_8_C1',
+                             bbox=bbox,
+                             begin=datetime.datetime(2013,1,1),
+                             end=datetime.datetime(2016,1,1),
+                             max_results=10,
+                             max_cloud_cover=40)
+
+    # Extract Landsat scene ids for each hit from the metadata
+    scene_list = [x['displayId'] for x in scene_list]
+
+
+Place a processing order to Espa
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The scene list can be used to send a processing order to Espa via the Espa API. 
+Many options are available (full scene, pixel resizing, reprojection, cropping).
+
+
+Order full scenes
+
+
+.. code:: python
+
+    from lsru import Espa
+    from pprint import pprint
+
+    # Instantiate Espa class
+    espa = Espa()
+
+    # Place order (full scenes, no reprojection, sr and pixel_qa)
+    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'])
+    pprint(order_meta)
+
+    # {'orderid': 'espa-loic.dutrieux@wur.nl-10212018-102816-245',
+    #  'status': 'ordered'}
+
+Check current orders status
+
+.. code:: python
+
+    for order in espa.orders:
+        # Orders have their own class with attributes and methods
+        print('%s: %s' % (order.orderid, order.status))
+
+Download completed orders. When Espa finishes pre-processing an order, its status 
+changes to ``complete``, we can then download the processed scenes.
+
+.. code:: python
+
+    for order in espa.orders:
+        if order.is_complete:
+            order.download_all_complete('/media/landsat/download/dir')
+
+It is also possible order processing with reprojection, cropping, resizing, etc
+
+.. code:: python
+
+    # Inspect aea projection parameters
+    pprint(espa.projections['aea'])
+    # Define projection parameters
+    proj_params = {'aea': {'central_meridian': 3.8,
+                           'datum': 'wgs84',
+                           'false_easting': 0,
+                           'false_northing': 0,
+                           'latitude_of_origin': 43.7,
+                           'standard_parallel_1': 43,
+                           'standard_parallel_2': 44}}
+    # Place order
+    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'],
+                            note='cropped order with resampling', projection=proj_params,
+                            extent=bbox, resolution=60)
+
+
+Installation
+------------
+
+Activate a virtualenv (optional but preferable) and run:
+
+.. code:: sh
+
+    pip install lsru
+
+
+Setup
+-----
+
+The package requires a configuration file in which usgs credentials are written. 
+By default the file is called ``~/.lsru`` (this can be modified if you want to join) 
+this configuration with the configuration of another project) and has the following structure.
+
+::
+
+    [usgs]
+    username=your_usgs_username
+    password=your_very_secure_password
+
+
 
 Why can't I just retrieve my Landsat data from Earth Explorer, Amazon or Google cloud?
 --------------------------------------------------------------------------------------
@@ -49,140 +172,6 @@ reference high level Landsat processing tool):
 
 -  Not necessarily trivial
 
-Usage
------
-
-.. code:: python
-
-
-    from lsru import Espa, Usgs
-    import datetime
-    from pprint import pprint
-
-    # Define query extent
-    bbox = (3.5, 43.4, 4, 44)
-
-    # Instantiate Usgs class and login
-    usgs = Usgs()
-    usgs.login()
-
-    # Query the Usgs api to find scene intersecting with the spatio-temporal window
-    scene_list = usgs.search(collection='LANDSAT_8_C1',
-                             bbox=bbox,
-                             begin=datetime.datetime(2013,1,1),
-                             end=datetime.datetime(2016,1,1),
-                             max_results=10,
-                             max_cloud_cover=40)
-
-    # The espa api require a list of scenes names, which are contained in displayId key of scene metadata
-    scene_list = [x['displayId'] for x in scene_list]
-
-    # Instantiate Espa class
-    espa = Espa()
-
-    # Place order (full scenes, no reprojection, sr and pixel_qa)
-    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'])
-    pprint(order_meta)
-
-::
-
-    {'orderid': 'espa-loic.dutrieux@wur.nl-10212018-102816-245',
-     'status': 'ordered'}
-
-.. code:: python
-
-    from lsru import Espa, Usgs
-    import datetime
-    from pprint import pprint
-
-    bbox = (3.5, 43.4, 4, 44)
-
-    usgs = Usgs()
-    usgs.login()
-    # Query the Usgs api to find scene intersecting with the spatio-temporal window
-    scene_list = usgs.search(collection='LANDSAT_8_C1',
-                             bbox=bbox,
-                             begin=datetime.datetime(2013,1,1),
-                             end=datetime.datetime(2016,1,1),
-                             max_results=10,
-                             max_cloud_cover=40)
-    # The espa api require a list of scenes names, which are contained in displayId key of scene metadata
-    scene_list = [x['displayId'] for x in scene_list]
-
-    # Instantiate Espa class
-    espa = Espa()
-    # Inspect aea projection parameters
-    pprint(espa.projections['aea'])
-    # Define projection parameters
-    proj_params = {'aea': {'central_meridian': 3.8,
-                           'datum': 'wgs84',
-                           'false_easting': 0,
-                           'false_northing': 0,
-                           'latitude_of_origin': 43.7,
-                           'standard_parallel_1': 44,
-                           'standard_parallel_2': 43}}
-    # Place order
-    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'],
-                            note='cropped order with resampling', projection=proj_params,
-                            extent=bbox, resolution=60)
-    pprint(order_meta)
-
-
-Installing landsat-espa-util
-----------------------------
-
-First you must have geos and gdal installed.
-
-.. code:: sh
-
-    sudo apt-get install libgdal-dev # This also installs libgeos-dev
-
-Then, preferably in a virtualenv, run:
-
-.. code:: sh
-
-    pip install git+https://github.com/loicdtx/landsat-espa-util.git
-
-Step by step installation from scratch
---------------------------------------
-
-If you do not have anything setup (virtualenv, gdal, geos, git), follow
-the steps below.
-
-.. code:: sh
-
-    # Install gdal and geos (geos directly comes as a dependency)
-    $ sudo apt-get install libgdal-dev
-
-    # Install pip (a package manager for python) and git (required to install directly from github)
-    $ sudo apt-get install python-pip git
-
-    # Install virtualenv (virtual environments for python projects)
-    $ sudo pip install virtualenv
-
-    # Install virtualenvwrapper (Makes working with virtualenv easier)
-    $ sudo pip install virtualenvwrapper
-
-    # Finish setting up virtualenvwraper (of course if you use a different shell, export to the right config file)
-    $ echo 'source /usr/local/bin/virtualenvwrapper.sh' >> ~/.bashrc
-    $ source ~/.bashrc
-
-    # Create a virtual environement
-    $ mkvirtualenv landsat_download
-
-    # You are now in the virtual environment
-    # You can exit it by running 'deactivate'
-    # And get back to it with 'workon landsat_download'
-
-    # Install
-    (landsat_download)$ pip install git+https://github.com/loicdtx/landsat-espa-util.git
-
-    # As long as you stay in the virtual environment you can run the lsru commands
-    (landsat_download)$ lsru --help
-
-    # Exist virtualenv
-    (landsat_download)$ deactivate
-    $
 
 .. figure:: https://i.imgflip.com/1c7eet.jpg
    :alt:
