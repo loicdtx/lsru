@@ -152,6 +152,20 @@ class Usgs(object):
 
 
 class EspaBase(metaclass=abc.ABCMeta):
+    """Interface to the Espa API (metaclass)
+
+    Espa is a platform providing on demand pre-processing of Landsat surface
+    data. This class uses the API of the espa platform to query and place orders
+    programatically
+
+    Attributes:
+        USER (str): Usgs username
+        PASSWORD (str): Usgs password
+        host (str): API host url
+
+    Args:
+        conf (str): Path of the config file containing usgs credentials
+    """
     def __init__(self, conf):
         try:
             config = configparser.ConfigParser()
@@ -186,6 +200,8 @@ class EspaBase(metaclass=abc.ABCMeta):
 
 
 class Espa(EspaBase):
+    """Interface to the espa API
+    """
     def __init__(self, conf=os.path.expanduser('~/.lsru')):
         super().__init__(conf=conf)
         self._projections = None
@@ -267,6 +283,12 @@ class Espa(EspaBase):
 
     @property
     def projections(self):
+        """Get a dictionary of projections supported by the platform
+
+        Return:
+            dict: Dictionary with key=projections names and values=projection
+            attributes
+        """
         if self._projections is None:
             self._projections = self._request('projections')
         return self._projections
@@ -293,6 +315,11 @@ class Espa(EspaBase):
 
     @property
     def formats(self):
+        """Get a list of file formats supported by the platform
+
+        Returns:
+            list: List of strings corresponding to the formats names
+        """
         if self._formats is None:
             self._formats = self._request('formats')
         return self._formats
