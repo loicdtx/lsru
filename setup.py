@@ -11,6 +11,10 @@ with open('lsru/__init__.py') as f:
             continue
 
 
+extra_reqs = {'docs': ['sphinx',
+                       'sphinx-rtd-theme']}
+
+
 setup(name='lsru',
       version=version,
       description=u"Access the ESPA API for Landsat surface reflectance data ordering and download",
@@ -23,4 +27,6 @@ setup(name='lsru',
       packages=find_packages(),
       install_requires=[
           'requests',
-      ])
+      ],
+      extras_require=extra_reqs)
+
