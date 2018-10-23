@@ -13,6 +13,24 @@ __version__ = "0.3.0"
 
 
 class Usgs(object):
+    """Interface to the Usgs API
+
+    See documentation of the ``search`` method for basic usage
+
+    Args:
+        version (str): API version to use, defaults to ``'stable'``
+        conf (str): Path of the configuration file containing usgs login
+            credentials
+
+    Attributes:
+        USER (str): Usgs username
+        PASSWORD (str): Usgs password
+        endpoint (str): API endpoint
+        key (str): API key. Required to perform a search and obtained by
+            running the ``login()`` method
+        key_dt (datetime.datetime): Time at which the key was generated
+
+    """
     def __init__(self, version='stable', conf=os.path.expanduser('~/.lsru')):
         try:
             config = configparser.ConfigParser()
@@ -28,6 +46,11 @@ class Usgs(object):
 
     @property
     def key_age(self):
+        """Determines the age of API key
+
+        Returns:
+            datetime.timedelta
+        """
         if self.key_dt is None:
             raise ValueError('key_age is not defined, you probably need to run login()')
         return datetime.datetime.now() - self.key_dt
@@ -51,6 +74,12 @@ class Usgs(object):
 
     def login(self):
         """Login to the Usgs api
+
+        This method is necessary to obtain an API key (automatically saved in
+        the ``key`` attribute), and send other queries to the API
+
+        Return:
+            bool: True if query was successful, False otherwise
         """
         login_endpoint = '/'.join([self.endpoint, 'login'])
         r = requests.post(login_endpoint,
