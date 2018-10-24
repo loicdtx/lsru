@@ -2,24 +2,25 @@
 lsru
 *******
 
+*Query, order and download Landsat surface reflectance data programmatically*
+
+
+
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: User guide
 
 
-
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Developer guide
 
+   api
+
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Examples
-
 
 
 Indices and tables
