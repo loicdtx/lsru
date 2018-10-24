@@ -200,7 +200,19 @@ class EspaBase(metaclass=abc.ABCMeta):
 
 
 class Espa(EspaBase):
-    """Interface to the espa API
+    """Interface to the Espa API
+
+    Espa is a platform providing on demand pre-processing of Landsat surface
+    data. This class uses the API of the espa platform to query and place orders
+    programatically
+
+    Attributes:
+        USER (str): Usgs username
+        PASSWORD (str): Usgs password
+        host (str): API host url
+
+    Args:
+        conf (str): Path of the config file containing usgs credentials
     """
     def __init__(self, conf=os.path.expanduser('~/.lsru')):
         super().__init__(conf=conf)
@@ -326,34 +338,69 @@ class Espa(EspaBase):
 
     @property
     def resampling_methods(self):
+        """Get a list of resamling methods suported by the platform
+
+        Returns:
+            list: List of resampling methods
+        """
         if self._resampling_methods is None:
             self._resampling_methods = self._request('resampling-methods')
         return self._resampling_methods
 
     @property
     def user(self):
+        """Get Usgs user details
+
+        Returns:
+            dict: Usgs user information
+        """
         if self._user is None:
             self._user = self._request('user')
         return self._user
 
     @property
     def orders(self):
+        """Get a list of current orders
+
+        Returns:
+            list: List of ``lsru.Order``, each one corresponding to an order with
+            ordered or complete status (purged orders are not listed)
+        """
         order_list = self._request('list-orders',
                                    body={'status': ['complete', 'ordered']})
         return [Order(x) for x in order_list]
 
 
 class Order(EspaBase):
+    """Class to deal with espa orders
+
+    Attributes:
+        orderir (str): Espa order ID
+
+    Args:
+        orderid (str): Espa order ID
+        conf (str): Path to file containing usgs credentials
+    """
     def __init__(self, orderid, conf=os.path.expanduser('~/.lsru')):
         super().__init__(conf=conf)
         self.orderid = orderid
 
     @property
     def status(self):
+        """Get the current status of the order
+
+        Return:
+            str: Order status (e.g. ``ordered``, ``complete``, ``purged``)
+        """
         return self._request('order-status/%s' % self.orderid)['status']
 
     @property
     def is_complete(self):
+        """Check if order has status ``complete``
+
+        Return:
+            bool
+        """
         return True if self.status == 'complete' else False
 
     @property
@@ -362,12 +409,25 @@ class Order(EspaBase):
 
     @property
     def urls_completed(self):
+        """Get list of item's url whose status is complete
+
+        Return:
+            list: A list of download urls
+        """
         item_list = self.items_status
         url_list = [x['product_dload_url'] for x in item_list
                     if x['status'] == 'complete']
         return url_list
 
     def cancel(self):
+        """Cancel the order
+
+        Orders are processed in the order they were placed. Cancelling an order
+        may be useful when the order is blocking other orders
+
+        Return:
+            dict: The response of the API to the cancellation order
+        """
         cancel_request = {"orderid": self.orderid, "status": "cancelled"}
         return self._request('order', verb='put', body=cancel_request)
 
