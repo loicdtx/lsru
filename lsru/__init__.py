@@ -70,7 +70,7 @@ class Usgs(object):
                        5: 'LANDSAT_TM_C1',
                        7: 'LANDSAT_ETM_C1',
                        8: 'LANDSAT_8_C1'}
-        return collection[num]
+        return collections[num]
 
     def login(self):
         """Login to the Usgs api
