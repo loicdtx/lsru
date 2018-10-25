@@ -263,14 +263,14 @@ class Espa(EspaBase):
             ...                          begin=datetime.datetime(2014,1,1),
             ...                          end=datetime.datetime(2018,1,1))
             >>> scene_list = [x['displayId'] for x in scene_list]
-            >>> print(scene_list)
+            >>> order = espa.order(scene_list, products=['sr', 'pixel_qa'])
 
 
         Return:
-            dict: The method is mostly used for its side effect of placing a
-            pre-processing order on the espa platform. It also returns a dictionary
-            containing order information
-        """
+            lsru.Order: The method is mostly used for its side effect of placing a
+            pre-processing order on the espa platform. It also returns a the
+            ``lsru.Order`` instance corresponding to the order
+            """
         if note is None:
             note = 'order placed on %s' % datetime.datetime.now().isoformat()
         prods = self.get_available_products(scene_list)
@@ -291,7 +291,7 @@ class Espa(EspaBase):
                 extent_dict.update(units=extent_units)
                 params.update(image_extents=extent_dict)
         order_meta = self._request('order', verb='post', body=params)
-        return order_meta
+        return Order(order_meta['orderid'])
 
     @property
     def projections(self):
