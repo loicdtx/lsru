@@ -7,10 +7,10 @@ ordering*
 Before, downloading Landsat surface reflectance data for a given area
 meant:
 
-    - Manually querying the sceneIDs on Earth Explorer
-    - Saving these lists of sceneIDs to text files
-    - Manually uploading these files to ESPA to place the order
-    - Downloading the processed data with a download manager
+- Manually querying the sceneIDs on Earth Explorer
+- Saving these lists of sceneIDs to text files
+- Manually uploading these files to ESPA to place the order
+- Downloading the processed data with a download manager
 
 Now, thanks to `USGS
 API <https://earthexplorer.usgs.gov/inventory/documentation/json-api>`__,
@@ -70,11 +70,10 @@ Order full scenes
     espa = Espa()
 
     # Place order (full scenes, no reprojection, sr and pixel_qa)
-    order_meta = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'])
-    pprint(order_meta)
+    order = espa.order(scene_list=scene_list, products=['sr', 'pixel_qa'])
+    print(order.orderid)
 
-    # {'orderid': 'espa-loic.dutrieux@wur.nl-10212018-102816-245',
-    #  'status': 'ordered'}
+    # espa-loic.dutrieux@wur.nl-10212018-102816-245'
 
 Check current orders status
 

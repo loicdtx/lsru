@@ -100,17 +100,13 @@ We can now proceed to preparing the scene list for placing the order to espa
 
     scene_list = [x['displayId'] for x in meta_list]
     espa = Espa()
-    order_meta = espa.order(scene_list,
-                            products=['pixel_qa', 'sr_ndmi'])
+    order = espa.order(scene_list,
+                       products=['pixel_qa', 'sr_ndmi'])
 
-    # We can then instantiate an Order class to track the status of the order and eventually download it once processing is completed
-    order = Order(order_meta['orderid'])
-
-
-Output
+We can then track the status of the order and eventually download it once processing is completed
 
 .. code:: python
 
-print(order.status)
+    print(order.status)
 
 
