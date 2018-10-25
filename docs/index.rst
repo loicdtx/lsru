@@ -22,6 +22,8 @@ lsru
    :maxdepth: 1
    :caption: Examples
 
+   example_polygon
+
 
 Indices and tables
 ==================
