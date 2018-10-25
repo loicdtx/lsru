@@ -68,12 +68,8 @@ For the present example, we'll use the following feature, which roughly correspo
                             max_cloud_cover=30)
     print(len(meta_list))
 
-
-Output
-
-.. code:: python
-
-    52
+    # Printed:
+    # 52
 
 
 Because we queried the data using the extent, it is highly probable that some scenes do not intersect with the initial geometry but only with its extent. We can therefore filter the list of scene metadata by testing for intersection between the scene bounds and the geometry. This is done using shapely
@@ -86,11 +82,9 @@ Because we queried the data using the extent, it is highly probable that some sc
 
     print(len(meta_list))
 
-Output
+    # printed:
+    # 27
 
-.. code:: python
-
-    27
 
 The amount of element has reduced by half compared to the total API hits and we are now sure to have retained only scenes that actually intersect with the initial geometry.
 
@@ -108,5 +102,8 @@ We can then track the status of the order and eventually download it once proces
 .. code:: python
 
     print(order.status)
+
+    # printed:
+    # ordered
 
 
