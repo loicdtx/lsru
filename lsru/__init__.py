@@ -65,7 +65,7 @@ class Usgs(object):
             num (int): Landsat spacecraft number (4, 5, 7 or 8)
 
         Returns:
-            str: Earth Explorer collection name formated to i.e.: pass to the
+            str: Earth Explorer collection name formated to i.e. pass to the
                 search method
         """
         collections = {4: 'LANDSAT_TM_C1',
@@ -433,11 +433,20 @@ class Order(EspaBase):
         cancel_request = {"orderid": self.orderid, "status": "cancelled"}
         return self._request('order', verb='put', body=cancel_request)
 
-    def download_all_complete(self, path):
+    def download_all_complete(self, path, overwrite=False, check_complete=True):
         """Download all completed scenes of the order to a folder
 
         Args:
             path (str): Directory where data are to be downloaded
+            overwrite (bool): Force overwriting existing files even when they
+                already exist? Defaults to False
+            check_complete (bool): When local files exist and overwrite is set
+                to ``False``, check whether local and remote files sizes match?
+                File is re-downloaded when sizes are different. Only makes sense
+                if overwrite is set to ``False``. Defaults to ``True``. Also note that
+                checking file size takes time (a few millisecons probably), so
+                that you'll save time setting this argument to ``False`` in case
+                you're sure previous downloads are complete
 
         Returns:
             Used for its side effect of batch downloading data, no return

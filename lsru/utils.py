@@ -62,7 +62,7 @@ def geom_from_metadata(meta):
         >>> print(s.is_valid)
 
     Returns:
-        dict: GeoJson like geometry. CRS is always in longlat (EPSG:4326)
+        dict: GeoJson like geometry. CRS is always in longlat (EPSG 4326)
     """
     geom = {'type': 'Polygon',
             'coordinates': [[
