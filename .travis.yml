@@ -11,7 +11,7 @@ python:
 before_install:
   - pip install -U pip
 
-install:
+script:
   - pip install -e .  
 
 deploy:
