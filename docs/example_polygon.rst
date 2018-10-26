@@ -2,7 +2,7 @@ Order data using a polygon
 ==========================
 
 The following example details the steps to place a pre-processing order of scenes intersecting with a polygon. 
-Such task requires a little bit of boilerplate code since the Usgs API requires an extent and not a , but thanks to ``shapely`` and some additional utilities provided by ``lsru`` can be done with a few lines of code. 
+Such task requires a little bit of boilerplate code since the Usgs API requires an extent and not a polygon, but thanks to ``shapely`` and some additional utilities provided by ``lsru`` it can be done with a few lines of code. 
 The steps are roughly to:
 
 - Read the feature (e.g. using ``fiona`` or directly from a geojson file with ``json``)
@@ -11,7 +11,7 @@ The steps are roughly to:
 - Filter out scenes that do not intersect with the geometry
 - Place the pre-processing order to Espa
 
-To run this script, we'll need shapely, and some utils to manipulate geojson geometries provided by lsru. You may need fiona as well in case you need to read a feature from a geospatial vector file (shapefile, geopackage, etc)
+To run this script, we'll need shapely, and some utils to manipulate geojson geometries provided by ``lsru``. You may need fiona as well in case you need to read a feature from a geospatial vector file (shapefile, geopackage, etc)
 
 .. code:: python
 

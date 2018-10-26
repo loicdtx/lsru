@@ -12,13 +12,15 @@ It has 3 main classes:
 - ``Order`` is the interface to each individual orders placed to the espa platform; it allows retrieving order status and downloading corresponding scenes.
 
 
-``lsru`` also contain various utilities to smoothen workflows for various use cases of the module.
+``lsru`` also contains various utilities to smoothen workflows for various use cases of the module.
 
 
 
 .. toctree::
    :maxdepth: 1
    :caption: User guide
+
+   user_guide
 
 
 .. toctree::
@@ -32,6 +34,7 @@ It has 3 main classes:
    :maxdepth: 1
    :caption: Examples
 
+   basic_usage
    example_polygon
 
 
