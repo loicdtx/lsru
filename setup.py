@@ -14,10 +14,13 @@ with open('lsru/__init__.py') as f:
 extra_reqs = {'docs': ['sphinx',
                        'sphinx-rtd-theme']}
 
+with codecs.open('README.rst', encoding='utf-8') as f:
+    readme = f.read()
 
 setup(name='lsru',
       version=version,
       description=u"Access the ESPA API for Landsat surface reflectance data ordering and download",
+      long_description=readme,
       keywords='landsat, API, espa, usgs',
       author=u"Loic Dutrieux",
       author_email='loic.dutrieux@gmail.com',

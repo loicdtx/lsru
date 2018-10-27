@@ -1,18 +1,28 @@
 language: python
+
 cache: pip
+
 dist: trusty
+
 python:
 - '2.7'
 - '3.6'
+
 before_install:
 - pip install -U pip
+
 script:
 - pip install -e .
+
 deploy:
   provider: pypi
   user: loicdtx
   password:
     secure: ePPgg00DQzYx6EqQCV+8O5yx7sSO9GD26BqzhSL2nNX7w6/osoaqUtyG0gZiCS6tCWrco+3TZ6SbCi6oxuGAHjWPTtmxvBPzmzRpSCPJ4/ZBh63F5ceBF1GJE3VZV8PsiUv/z4CLOLbliyIj1j7DwprLFqGKW5zVmIb+BOMKs8mFFHZytz3NSjfE5oPEOzJdtkvJAjK8ugnFN5NeiDhqDT6NhEb3fudiEP75YF2iLoC1jXilB594P15O1prkUNlevDQHgmAxonAOqExN3SdIJmS6eFqoW5f99yPteSobhXZk6dGQQwM9YSviC1akXaz/RnuNF8zVJwibOOhGGPgo+kG0GCPmgZthm5oZa1NbpZgmdlUw2cB28M/i+Mh9zqExXRrwKF0k4TnejlRoOecNsvG5TeX8fcag2jKqPR4d93V9CMtYgxS4i6kPJ/brQ9IvW/oLnVx0zg2p/Zw2bqiEAWTdK4ZZq/J3wvdciA1EyOV9EhtldkpnO1/IWYsGVX/Uan5g6xMRsq/83RXkh1obchpl6qOyK2V8ETs/yFxc0gmibRzI8D/OegRJNR7roJJoNaHETh+Myfw7IFNXz1udeEtQYAxtrW/1MVRZ2TjAakHtnhxe0L7hjNcZt1TnKwXNxSfXIunllaBMAmpNl6A8tgJUc6ItFwBSNlPbxai3Aaw=
+  on:
+    tags: true
+
 warnings_are_errors: true
+
 notifications:
   email: false
