@@ -4,6 +4,20 @@ Landsat-ESPA-util
 *Interface to USGS and ESPA APIs for Landsat surface reflectance data
 ordering*
 
+
+.. image:: https://travis-ci.org/loicdtx/lsru.svg?branch=master
+    :target: https://travis-ci.org/loicdtx/lsru
+
+.. image:: https://badge.fury.io/py/lsru.svg
+    :target: https://badge.fury.io/py/lsru
+
+.. image:: https://readthedocs.org/projects/lsru/badge/?version=latest
+    :target: https://lsru.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+
+Online doc at `lsru.readthedocs.io <https://lsru.readthedocs.io/en/latest/>`__
+
 Before, downloading Landsat surface reflectance data for a given area
 meant:
 
