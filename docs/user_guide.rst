@@ -4,9 +4,7 @@ User Guide
 Installation
 ------------
 
-    Note: installation requires python3
-
-Activate a **python3** virtualenv (optional but preferable) and run:
+Activate a virtualenv (optional but preferable) and run:
 
 .. code:: sh
 

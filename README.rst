@@ -122,9 +122,8 @@ It is also possible order processing with reprojection, cropping, resizing, etc
 Installation
 ------------
 
-    Note: This package requires python 3
 
-Activate a **python3** virtualenv (optional but preferable) and run:
+Activate a virtualenv (optional but preferable) and run:
 
 .. code:: sh
 

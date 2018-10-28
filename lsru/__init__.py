@@ -3,9 +3,12 @@ from __future__ import print_function
 import os
 import json
 import datetime
-import configparser
 from pprint import pprint
-import abc
+# handle configparser python2, 3 compatibility
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 
 import requests
 
@@ -35,7 +38,7 @@ class Usgs(object):
     """
     def __init__(self, version='stable', conf=os.path.expanduser('~/.lsru')):
         try:
-            config = configparser.ConfigParser()
+            config = ConfigParser()
             config.read(conf)
             self.USER = config['usgs']['username']
             self.PASSWORD = config['usgs']['password']
@@ -153,7 +156,7 @@ class Usgs(object):
         return r.json()['data']['results']
 
 
-class EspaBase(metaclass=abc.ABCMeta):
+class _EspaBase(object):
     """Interface to the Espa API (metaclass)
 
     Espa is a platform providing on demand pre-processing of Landsat surface
@@ -170,7 +173,7 @@ class EspaBase(metaclass=abc.ABCMeta):
     """
     def __init__(self, conf):
         try:
-            config = configparser.ConfigParser()
+            config = ConfigParser()
             config.read(conf)
             self.USER = config['usgs']['username']
             self.PASSWORD = config['usgs']['password']
@@ -201,7 +204,7 @@ class EspaBase(metaclass=abc.ABCMeta):
         return data
 
 
-class Espa(EspaBase):
+class Espa(_EspaBase):
     """Interface to the Espa API
 
     Espa is a platform providing on demand pre-processing of Landsat surface
@@ -217,7 +220,7 @@ class Espa(EspaBase):
         conf (str): Path of the config file containing usgs credentials
     """
     def __init__(self, conf=os.path.expanduser('~/.lsru')):
-        super().__init__(conf=conf)
+        super(Espa, self).__init__(conf=conf)
         self._projections = None
         self._formats = None
         self._resampling_methods = None
@@ -373,7 +376,7 @@ class Espa(EspaBase):
         return [Order(x) for x in order_list]
 
 
-class Order(EspaBase):
+class Order(_EspaBase):
     """Class to deal with espa orders
 
     Attributes:
@@ -384,7 +387,7 @@ class Order(EspaBase):
         conf (str): Path to file containing usgs credentials
     """
     def __init__(self, orderid, conf=os.path.expanduser('~/.lsru')):
-        super().__init__(conf=conf)
+        super(Order, self).__init__(conf=conf)
         self.orderid = orderid
 
     @property
