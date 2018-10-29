@@ -14,7 +14,13 @@ import requests
 
 from .utils import url_retrieve
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
+
+# FileNotFoundError does not exist in python2
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
 
 
 class Usgs(object):
@@ -47,7 +53,7 @@ class Usgs(object):
             self.key = None
             self.key_dt = None
         except Exception as e:
-            raise StandardError('There must be a valid configuration file to instantiate this class')
+            raise FileNotFoundError('There must be a valid configuration file to instantiate this class')
 
     @property
     def key_age(self):
@@ -179,7 +185,7 @@ class _EspaBase(object):
             self.PASSWORD = config['usgs']['password']
             self.host = 'https://espa.cr.usgs.gov/api/v1'
         except Exception as e:
-            raise StandardError('There must be a valid configuration file to instantiate this class')
+            raise FileNotFoundError('There must be a valid configuration file to instantiate this class')
 
     def _request(self, endpoint, verb='get', body=None):
         """Generic interface to ESPA api
