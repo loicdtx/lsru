@@ -145,4 +145,4 @@ def url_retrieve(url, filename, overwrite=False, check_complete=True):
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
-    return local_filename
+    return filename
