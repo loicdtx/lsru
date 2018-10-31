@@ -12,7 +12,7 @@ except ImportError:
 
 import requests
 
-from .utils import url_retrieve
+from .utils import url_retrieve, url_retrieve_and_unpack
 
 __version__ = "0.4.3"
 
@@ -442,11 +442,13 @@ class Order(_EspaBase):
         cancel_request = {"orderid": self.orderid, "status": "cancelled"}
         return self._request('order', verb='put', body=cancel_request)
 
-    def download_all_complete(self, path, overwrite=False, check_complete=True):
+    def download_all_complete(self, path, unpack=False, overwrite=False,
+                              check_complete=True):
         """Download all completed scenes of the order to a folder
 
         Args:
             path (str): Directory where data are to be downloaded
+            unpack (bool): Unpack downloaded archives on the fly
             overwrite (bool): Force overwriting existing files even when they
                 already exist? Defaults to False
             check_complete (bool): When local files exist and overwrite is set
@@ -456,15 +458,19 @@ class Order(_EspaBase):
                 checking file size takes time (a few millisecons probably), so
                 that you'll save time setting this argument to ``False`` in case
                 you're sure previous downloads are complete
+                Note that this option does not work when ``unpack`` is set to True
 
         Returns:
             Used for its side effect of batch downloading data, no return
         """
         for url in self.urls_completed:
             filename = url.split('/')[-1]
-            dst = os.path.join(path, filename)
             print('Downloading %s' % filename)
-            url_retrieve(url, dst, overwrite=overwrite,
-                         check_complete=check_complete)
+            if unpack:
+                url_retrieve_and_unpack(url, path, overwrite=overwrite)
+            else:
+                dst = os.path.join(path, filename)
+                url_retrieve(url, dst, overwrite=overwrite,
+                             check_complete=check_complete)
 
 
