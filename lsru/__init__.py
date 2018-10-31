@@ -14,7 +14,7 @@ import requests
 
 from .utils import url_retrieve
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 # FileNotFoundError does not exist in python2
 try:
@@ -464,6 +464,7 @@ class Order(_EspaBase):
             filename = url.split('/')[-1]
             dst = os.path.join(path, filename)
             print('Downloading %s' % filename)
-            url_retrieve(url, dst)
+            url_retrieve(url, dst, overwrite=overwrite,
+                         check_complete=check_complete)
 
 
