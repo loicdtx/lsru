@@ -14,7 +14,7 @@ import requests
 
 from .utils import url_retrieve, url_retrieve_and_unpack
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 # FileNotFoundError does not exist in python2
 try:
