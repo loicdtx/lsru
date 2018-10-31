@@ -35,4 +35,5 @@ utils
    utils.geom_from_metadata
    utils.is_valid
    utils.url_retrieve
+   utils.url_retrieve_and_unpack
 

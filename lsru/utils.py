@@ -1,5 +1,8 @@
 import re
 import os
+from io import BytesIO
+import tarfile
+from contextlib import closing
 from datetime import datetime, date
 
 import requests
@@ -146,3 +149,29 @@ def url_retrieve(url, filename, overwrite=False, check_complete=True):
             if chunk:
                 f.write(chunk)
     return filename
+
+
+def url_retrieve_and_unpack(url, path, overwrite=False):
+    """Generic function to combine download and unpacking of tar archives
+
+    Downloads the tar archive as a memory object and extracts its content to a
+    new directory. Directory name is the remote file name with stripped extension
+
+    Args:
+        url (str): Url pointing to tar file to retrieve
+        path (str): Path to directory under which a new directory containing the
+            archive content will be created
+        overwrite (bool): Force overwriting local files even when the output
+            directory already exist? Defaults to False
+
+    Returns:
+        str: The path containing extracted content
+    """
+    folder = url.split('/')[-1].split('.')[0]
+    path = os.path.join(path, folder)
+    if os.path.isdir(path) and not overwrite:
+        return path
+    r = requests.get(url)
+    with closing(r), tarfile.open(fileobj=BytesIO(r.content)) as archive:
+        archive.extractall(path=path)
+    return path
