@@ -14,7 +14,7 @@ import requests
 
 from .utils import url_retrieve, url_retrieve_and_unpack
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 # FileNotFoundError does not exist in python2
 try:
@@ -184,6 +184,7 @@ class _EspaBase(object):
             self.USER = config['usgs']['username']
             self.PASSWORD = config['usgs']['password']
             self.host = 'https://espa.cr.usgs.gov/api/v1'
+            self.conf = conf
         except Exception as e:
             raise FileNotFoundError('There must be a valid configuration file to instantiate this class')
 
@@ -302,7 +303,7 @@ class Espa(_EspaBase):
                 extent_dict.update(units=extent_units)
                 params.update(image_extents=extent_dict)
         order_meta = self._request('order', verb='post', body=params)
-        return Order(order_meta['orderid'])
+        return Order(order_meta['orderid'], conf=self.conf)
 
     @property
     def projections(self):
@@ -379,7 +380,7 @@ class Espa(_EspaBase):
         """
         order_list = self._request('list-orders',
                                    body={'status': ['complete', 'ordered']})
-        return [Order(x) for x in order_list]
+        return [Order(x, conf=self.conf) for x in order_list]
 
 
 class Order(_EspaBase):
