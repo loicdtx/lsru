@@ -466,12 +466,15 @@ class Order(_EspaBase):
         """
         for url in self.urls_completed:
             filename = url.split('/')[-1]
-            print('Downloading %s' % filename)
-            if unpack:
-                url_retrieve_and_unpack(url, path, overwrite=overwrite)
-            else:
-                dst = os.path.join(path, filename)
-                url_retrieve(url, dst, overwrite=overwrite,
-                             check_complete=check_complete)
+            try:
+                print('Downloading %s' % filename)
+                if unpack:
+                    url_retrieve_and_unpack(url, path, overwrite=overwrite)
+                else:
+                    dst = os.path.join(path, filename)
+                    url_retrieve(url, dst, overwrite=overwrite,
+                                 check_complete=check_complete)
+            except Exception as e:
+                print('%s skipped. Reason: %s' % (filename, e))
 
 
