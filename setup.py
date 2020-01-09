@@ -31,7 +31,6 @@ setup(name='lsru',
       url='https://github.com/loicdtx/landsat-espa-util',
       license='GPLv3',
       classifiers=[
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',

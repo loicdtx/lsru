@@ -1,26 +1,14 @@
-from __future__ import print_function
-
 import os
 import json
 import datetime
 from pprint import pprint
-# handle configparser python2, 3 compatibility
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 import requests
 
 from .utils import url_retrieve, url_retrieve_and_unpack
 
 __version__ = "0.5.2"
-
-# FileNotFoundError does not exist in python2
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
 
 
 class Usgs(object):
