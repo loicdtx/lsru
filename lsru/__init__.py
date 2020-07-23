@@ -8,7 +8,7 @@ import requests
 
 from .utils import url_retrieve, url_retrieve_and_unpack
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 
 class Usgs(object):
