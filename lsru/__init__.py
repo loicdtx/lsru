@@ -223,7 +223,7 @@ class Espa(_EspaBase):
 
     def order(self, scene_list, products, format='gtiff', note=None,
               resampling='nn', resolution=None, projection=None,
-              extent=None, extent_units='dd'):
+              extent=None, extent_units='dd', verbose=False):
         """Place a pre-procesing order to espa
 
         Args:
@@ -251,6 +251,8 @@ class Espa(_EspaBase):
             extent_units (str): Units of the provided extent. ``'dd'`` (decimal
                 degrees) is the default. If ```meters'`` bounds are specified
                 according to the coordinate reference system space.
+            verbose (bool): Prints the json body being sent. Useful for debugging
+                purposes
 
         Example:
             >>> from lsru import Espa, Usgs
@@ -275,6 +277,7 @@ class Espa(_EspaBase):
             note = 'order placed on %s' % datetime.datetime.now().isoformat()
         prods = self.get_available_products(scene_list)
         prods.pop('not_implemented', None)
+        prods.pop('date_restricted', None)
         def prepare_dict(d):
             d['products'] = products
             return d
@@ -290,6 +293,8 @@ class Espa(_EspaBase):
                 extent_dict = dict(zip(('west', 'south', 'east', 'north'), extent))
                 extent_dict.update(units=extent_units)
                 params.update(image_extents=extent_dict)
+        if verbose:
+            pprint(params)
         order_meta = self._request('order', verb='post', body=params)
         return Order(order_meta['orderid'], conf=self.conf)
 
