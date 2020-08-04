@@ -3,6 +3,7 @@ import json
 import datetime
 from pprint import pprint
 from configparser import ConfigParser
+import warnings
 
 import requests
 
@@ -277,7 +278,19 @@ class Espa(_EspaBase):
             note = 'order placed on %s' % datetime.datetime.now().isoformat()
         prods = self.get_available_products(scene_list)
         prods.pop('not_implemented', None)
-        prods.pop('date_restricted', None)
+        # There may be unavailable scenes for ordered products (remove them
+        if 'date_restricted' in prods:
+            date_restricted = prods.pop('date_restricted')
+            for k,v in date_restricted.items():
+                if k in products:
+                    for scene_id in v:
+                        for collection in prods.keys():
+                            try:
+                                prods[collection]['inputs'].remove(scene_id)
+                                warnings.warn('%s removed from order; reason: %s date restriction'
+                                              % (scene_id, k))
+                            except ValueError:
+                                pass
         def prepare_dict(d):
             d['products'] = products
             return d
